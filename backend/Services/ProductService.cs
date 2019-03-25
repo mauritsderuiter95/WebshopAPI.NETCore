@@ -35,10 +35,11 @@ namespace backend.Services
             return product;
         }
 
-        public void Update(string id, Product productIn)
+        public Product Update(string id, Product productIn)
         {
             productIn.Id = id;
             _products.ReplaceOne(product => product.Id == id, productIn);
+            return productIn;
         }
 
         public void Remove(Product productIn)

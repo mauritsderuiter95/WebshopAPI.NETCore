@@ -61,9 +61,9 @@ namespace backend.Controllers
                 return NotFound();
             }
 
-            _productService.Update(id, productIn);
+            product = _productService.Update(id, productIn);
 
-            return NoContent();
+            return CreatedAtRoute("GetProduct", new { id = product.Id.ToString() }, product);
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Role.Admin)]

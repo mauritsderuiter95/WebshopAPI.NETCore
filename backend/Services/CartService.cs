@@ -29,16 +29,32 @@ namespace backend.Services
             return _carts.Find<Cart>(cart => cart.Id == id).FirstOrDefault();
         }
 
-        public Cart Create(Cart cart)
+        public Cart Create(CartProduct cartProduct)
         {
+            Cart cart = new Cart();
+            cart.Products = new List<CartProduct>();
+            cart.Products.Add(cartProduct);
+
             _carts.InsertOne(cart);
             return cart;
         }
 
-        public void Update(string id, Cart cartIn)
+        public Cart Update(string id, CartProduct cartProduct)
         {
-            cartIn.Id = id;
-            _carts.ReplaceOne(cart => cart.Id == id, cartIn);
+            Cart cart = Get(id);
+            CartProduct exists = cart.Products.Where(x => x.ProductId == cartProduct.Id).FirstOrDefault();
+            if (exists != null)
+                exists.Count = exists.Count + cartProduct.Count;
+            else
+                cart.Products.Add(cartProduct);
+
+            _carts.ReplaceOne(c => c.Id == id, cart);
+
+            return cart;
+
+            //cartIn.Id = id;
+            //_carts.ReplaceOne(cart => cart.Id == id, cartIn);
+            //return cartIn;
         }
 
         public void Remove(Cart cartIn)

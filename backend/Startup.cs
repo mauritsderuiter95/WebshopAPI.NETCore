@@ -88,6 +88,8 @@ namespace backend
                 app.UseHsts();
             }
 
+            app.UseStaticFiles();
+
             app.UseCors(MyAllowSpecificOrigins);
 
             app.UseHttpsRedirection();

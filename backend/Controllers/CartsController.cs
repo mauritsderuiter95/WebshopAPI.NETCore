@@ -40,15 +40,15 @@ namespace backend.Controllers
         }
 
         [HttpPost]
-        public ActionResult<Cart> Create(Cart cart)
+        public ActionResult<Cart> Create(CartProduct cartProduct)
         {
-            _cartService.Create(cart);
+            Cart cart = _cartService.Create(cartProduct);
 
             return CreatedAtRoute("GetCart", new { id = cart.Id.ToString() }, cart);
         }
 
         [HttpPut("{id:length(24)}")]
-        public IActionResult Update(string id, Cart cartIn)
+        public IActionResult Update(string id, CartProduct cartProduct)
         {
             var cart = _cartService.Get(id);
 
@@ -57,7 +57,7 @@ namespace backend.Controllers
                 return NotFound();
             }
 
-            _cartService.Update(id, cartIn);
+            cart = _cartService.Update(id, cartProduct);
 
             return CreatedAtRoute("GetCart", new { id = cart.Id.ToString() }, cart); ;
         }

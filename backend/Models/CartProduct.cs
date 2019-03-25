@@ -7,13 +7,16 @@ using MongoDB.Bson.Serialization.Attributes;
 
 namespace backend.Models
 {
-    public class Cart
+    public class CartProduct
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
-        [BsonElement("products")]
-        public List<CartProduct> Products { get; set; }
+        [BsonElement("productId")]
+        public string ProductId { get; set; }
+
+        [BsonElement("count")]
+        public string Count { get; set; }
     }
 }
