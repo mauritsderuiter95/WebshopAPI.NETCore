@@ -66,6 +66,28 @@ namespace backend.Controllers
             return user;
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("currentuser", Name = "GetUserByUserName")]
+        public ActionResult<User> GetCurrent()
+        {
+            string currentUserName = User.Identity.Name;
+
+            var user = _userService.GetByUserName(currentUserName);
+
+            if (user.Username != currentUserName && !User.IsInRole(Role.Admin))
+            {
+                return Forbid();
+            }
+
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            return user;
+        }
+
         [HttpPost]
         public ActionResult<Product> Create(User user)
         {

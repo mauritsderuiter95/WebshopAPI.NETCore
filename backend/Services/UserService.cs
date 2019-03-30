@@ -47,6 +47,14 @@ namespace backend.Services
             return user;
         }
 
+        public User GetByUserName(string userName)
+        {
+            User user = _users.Find<User>(x => x.Username == userName).FirstOrDefault();
+            user.Password = null;
+            user.Token = null;
+            return user;
+        }
+
         public User Authenticate(string username, string password)
         {
             string passwordHash = CreateHash(password, _passwordSalt.Salt);
@@ -57,6 +65,8 @@ namespace backend.Services
                 return null;
 
             user = CreateToken(user);
+
+            user.Expires = DateTime.Now.AddDays(30);
 
             if (user == null)
             {

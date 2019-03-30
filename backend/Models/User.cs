@@ -30,5 +30,8 @@ namespace backend.Models
 
         [BsonElement("UserRoles")]
         public string Role { get; set; }
+
+        [BsonElement("TokenExpires")]
+        public DateTime Expires { get; set; }
     }
 }

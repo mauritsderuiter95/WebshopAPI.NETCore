@@ -11,12 +11,14 @@ namespace backend.Services
     public class CartService
     {
         private readonly IMongoCollection<Cart> _carts;
+        private readonly IMongoCollection<Product> _products;
 
         public CartService(IConfiguration config)
         {
             var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
             var database = client.GetDatabase("wrautomaten");
             _carts = database.GetCollection<Cart>("Carts");
+            _products = database.GetCollection<Product>("Products");
         }
 
         public List<Cart> Get()
@@ -26,7 +28,18 @@ namespace backend.Services
 
         public Cart Get(string id)
         {
-            return _carts.Find<Cart>(cart => cart.Id == id).FirstOrDefault();
+            Cart cart = _carts.Find<Cart>(x => x.Id == id).FirstOrDefault();
+            if (cart == null)
+                return null;
+            if(cart.Products.Count > 0)
+            {
+                foreach(CartProduct cartProduct in cart.Products)
+                {
+                    Product product = _products.Find<Product>(x => x.Id == cartProduct.ProductId).FirstOrDefault();
+                    cartProduct.ProductName = product.ProductName;
+                }
+            }
+            return cart;
         }
 
         public Cart Create(CartProduct cartProduct)
@@ -36,25 +49,61 @@ namespace backend.Services
             cart.Products.Add(cartProduct);
 
             _carts.InsertOne(cart);
+            if (cart.Products.Count > 0)
+            {
+                foreach (CartProduct cP in cart.Products)
+                {
+                    Product product = _products.Find<Product>(x => x.Id == cP.ProductId).FirstOrDefault();
+                    cP.ProductName = product.ProductName;
+                }
+            }
             return cart;
         }
 
         public Cart Update(string id, CartProduct cartProduct)
         {
             Cart cart = Get(id);
-            CartProduct exists = cart.Products.Where(x => x.ProductId == cartProduct.Id).FirstOrDefault();
+            CartProduct exists = cart.Products.Where(x => x.ProductId == cartProduct.ProductId).FirstOrDefault();
             if (exists != null)
-                exists.Count = exists.Count + cartProduct.Count;
+            {
+                int.TryParse(exists.Count, out int dbCount);
+                int.TryParse(cartProduct.Count, out int inputCount);
+                exists.Count = (dbCount + inputCount).ToString();
+            }
             else
                 cart.Products.Add(cartProduct);
 
             _carts.ReplaceOne(c => c.Id == id, cart);
+
+            if (cart.Products.Count > 0)
+            {
+                foreach (CartProduct cP in cart.Products)
+                {
+                    Product product = _products.Find<Product>(x => x.Id == cP.ProductId).FirstOrDefault();
+                    cP.ProductName = product.ProductName;
+                }
+            }
 
             return cart;
 
             //cartIn.Id = id;
             //_carts.ReplaceOne(cart => cart.Id == id, cartIn);
             //return cartIn;
+        }
+
+        public Cart UpdateCart(string id, Cart cartIn)
+        {
+            cartIn.Id = id;
+            _carts.ReplaceOne(cart => cart.Id == id, cartIn);
+            if (cartIn.Products.Count > 0)
+            {
+                foreach (CartProduct cP in cartIn.Products)
+                {
+                    Product product = _products.Find<Product>(x => x.Id == cP.ProductId).FirstOrDefault();
+                    cP.ProductName = product.ProductName;
+                }
+            }
+            return cartIn;
         }
 
         public void Remove(Cart cartIn)

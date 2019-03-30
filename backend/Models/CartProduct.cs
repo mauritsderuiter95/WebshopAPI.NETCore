@@ -16,6 +16,9 @@ namespace backend.Models
         [BsonElement("productId")]
         public string ProductId { get; set; }
 
+        [BsonElement("productName")]
+        public string ProductName { get; set; }
+
         [BsonElement("count")]
         public string Count { get; set; }
     }

@@ -48,6 +48,21 @@ namespace backend.Controllers
         }
 
         [HttpPut("{id:length(24)}")]
+        public IActionResult UpdateCart(string id, Cart cart)
+        {
+            var oldCart = _cartService.Get(id);
+
+            if (oldCart == null)
+            {
+                return NotFound();
+            }
+
+            cart = _cartService.UpdateCart(id, cart);
+
+            return CreatedAtRoute("GetCart", new { id = cart.Id.ToString() }, cart);
+        }
+
+        [HttpPut("{id:length(24)}/add")]
         public IActionResult Update(string id, CartProduct cartProduct)
         {
             var cart = _cartService.Get(id);
@@ -59,7 +74,7 @@ namespace backend.Controllers
 
             cart = _cartService.Update(id, cartProduct);
 
-            return CreatedAtRoute("GetCart", new { id = cart.Id.ToString() }, cart); ;
+            return CreatedAtRoute("GetCart", new { id = cart.Id.ToString() }, cart);
         }
 
         [HttpDelete("{id:length(24)}")]
