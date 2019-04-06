@@ -62,7 +62,7 @@ namespace backend.Controllers
             return CreatedAtRoute("GetCart", new { id = cart.Id.ToString() }, cart);
         }
 
-        [HttpPut("{id:length(24)}/add")]
+        [HttpPatch("{id:length(24)}")]
         public IActionResult Update(string id, CartProduct cartProduct)
         {
             var cart = _cartService.Get(id);
