@@ -19,14 +19,37 @@ namespace backend.Services
             _products = database.GetCollection<Product>("Products");
         }
 
-        public List<Product> Get()
+        public List<Product> GetList(string category)
         {
-            return _products.Find(product => true).ToList();
+            if (string.IsNullOrEmpty(category))
+                return _products.Find(product => true).ToList();
+            else
+            {
+                try
+                {
+                    List<Product> products = _products.Find(product => true).ToList();
+                    //.Where(x => x.Category.Contains(category)).ToList();
+
+                    products = products.Where(x => x.Category != null && x.Category.Any(i => i.ToLower() == category.ToLower())).ToList();
+                    return products;
+                }
+                catch(Exception e)
+                {
+                    return null;
+                }
+            }
         }
 
         public Product Get(string id)
         {
             return _products.Find<Product>(product => product.Id == id).FirstOrDefault();
+        }
+
+        public List<string> GetCat()
+        {
+            List<Product> products = GetList(null);
+
+            return products.Where(x => x.Category != null).SelectMany(x => x.Category).Distinct().ToList();
         }
 
         public Product Create(Product product)

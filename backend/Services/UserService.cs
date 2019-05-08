@@ -114,6 +114,27 @@ namespace backend.Services
             return user;
         }
 
+        public User Patch(string id, User user)
+        {
+            User oldUser = _users.Find<User>(x => x.Id == id).FirstOrDefault();
+
+            foreach (var property in user.GetType().GetProperties())
+            {
+
+            }
+
+            user.Token = null;
+            user.Password = null;
+            return user;
+
+
+            user.Password = CreateHash(user.Password, _passwordSalt.Salt);
+            user = CreateToken(user);
+            _users.ReplaceOne(x => x.Id == id, user);
+            user.Password = null;
+            return user;
+        }
+
         public User CreateToken(User user)
         {
             try

@@ -23,9 +23,15 @@ namespace backend.Controllers
         }
 
         [HttpGet]
-        public ActionResult<List<Product>> Get()
+        public ActionResult<List<Product>> GetList([FromQuery]string category)
         {
-            return _productService.Get();
+            return _productService.GetList(category);
+        }
+
+        [HttpGet("categories")]
+        public ActionResult<List<string>> GetCat()
+        {
+            return _productService.GetCat();
         }
 
         [HttpGet("{id:length(24)}", Name = "GetProduct")]

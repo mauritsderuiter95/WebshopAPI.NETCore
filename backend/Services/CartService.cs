@@ -55,6 +55,7 @@ namespace backend.Services
                 {
                     Product product = _products.Find<Product>(x => x.Id == cP.ProductId).FirstOrDefault();
                     cP.ProductName = product.ProductName;
+                    cP.ProductPrice = product.Price;
                 }
             }
             return cart;
@@ -81,6 +82,7 @@ namespace backend.Services
                 {
                     Product product = _products.Find<Product>(x => x.Id == cP.ProductId).FirstOrDefault();
                     cP.ProductName = product.ProductName;
+                    cP.ProductPrice = product.Price;
                 }
             }
 
@@ -101,6 +103,7 @@ namespace backend.Services
                 {
                     Product product = _products.Find<Product>(x => x.Id == cP.ProductId).FirstOrDefault();
                     cP.ProductName = product.ProductName;
+                    cP.ProductPrice = product.Price;
                 }
             }
             return cartIn;

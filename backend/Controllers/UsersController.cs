@@ -115,5 +115,20 @@ namespace backend.Controllers
 
             return CreatedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
         }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPatch("{id:length(24)}")]
+        public ActionResult<Product> Patch(string id, User user)
+        {
+            string currentUserName = User.Identity.Name;
+            if (user.Username != currentUserName && !User.IsInRole(Role.Admin))
+            {
+                return Forbid();
+            }
+
+            user = _userService.Patch(id, user);
+
+            return CreatedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
+        }
     }
 }

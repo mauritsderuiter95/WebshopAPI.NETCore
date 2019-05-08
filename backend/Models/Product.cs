@@ -21,7 +21,7 @@ namespace backend.Models
         public decimal Price { get; set; }
 
         [BsonElement("Category")]
-        public int Category { get; set; }
+        public List<string> Category { get; set; }
 
         [BsonElement("Discount")]
         public decimal Discount { get; set; }

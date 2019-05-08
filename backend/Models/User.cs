@@ -33,5 +33,8 @@ namespace backend.Models
 
         [BsonElement("TokenExpires")]
         public DateTime Expires { get; set; }
+
+        [BsonElement("Adresses")]
+        public List<Address> Adresses { get; set; }
     }
 }
