@@ -23,6 +23,9 @@ namespace backend.Models
         public decimal ProductPrice { get; set; }
 
         [BsonElement("count")]
-        public string Count { get; set; }
+        public int Count { get; set; }
+
+        [BsonElement("Photo")]
+        public Photo Photo { get; set; }
     }
 }

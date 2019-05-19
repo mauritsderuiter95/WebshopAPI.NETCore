@@ -31,14 +31,6 @@ namespace backend.Services
             Cart cart = _carts.Find<Cart>(x => x.Id == id).FirstOrDefault();
             if (cart == null)
                 return null;
-            if(cart.Products.Count > 0)
-            {
-                foreach(CartProduct cartProduct in cart.Products)
-                {
-                    Product product = _products.Find<Product>(x => x.Id == cartProduct.ProductId).FirstOrDefault();
-                    cartProduct.ProductName = product.ProductName;
-                }
-            }
             return cart;
         }
 
@@ -48,7 +40,6 @@ namespace backend.Services
             cart.Products = new List<CartProduct>();
             cart.Products.Add(cartProduct);
 
-            _carts.InsertOne(cart);
             if (cart.Products.Count > 0)
             {
                 foreach (CartProduct cP in cart.Products)
@@ -56,8 +47,12 @@ namespace backend.Services
                     Product product = _products.Find<Product>(x => x.Id == cP.ProductId).FirstOrDefault();
                     cP.ProductName = product.ProductName;
                     cP.ProductPrice = product.Price;
+                    cP.Photo = product.Photo;
                 }
             }
+
+            _carts.InsertOne(cart);
+            
             return cart;
         }
 
@@ -67,14 +62,10 @@ namespace backend.Services
             CartProduct exists = cart.Products.Where(x => x.ProductId == cartProduct.ProductId).FirstOrDefault();
             if (exists != null)
             {
-                int.TryParse(exists.Count, out int dbCount);
-                int.TryParse(cartProduct.Count, out int inputCount);
-                exists.Count = (dbCount + inputCount).ToString();
+                exists.Count = exists.Count + cartProduct.Count;
             }
             else
                 cart.Products.Add(cartProduct);
-
-            _carts.ReplaceOne(c => c.Id == id, cart);
 
             if (cart.Products.Count > 0)
             {
@@ -83,8 +74,11 @@ namespace backend.Services
                     Product product = _products.Find<Product>(x => x.Id == cP.ProductId).FirstOrDefault();
                     cP.ProductName = product.ProductName;
                     cP.ProductPrice = product.Price;
+                    cP.Photo = product.Photo;
                 }
             }
+
+            _carts.ReplaceOne(c => c.Id == id, cart);
 
             return cart;
 
@@ -104,6 +98,7 @@ namespace backend.Services
                     Product product = _products.Find<Product>(x => x.Id == cP.ProductId).FirstOrDefault();
                     cP.ProductName = product.ProductName;
                     cP.ProductPrice = product.Price;
+                    cP.Photo = product.Photo;
                 }
             }
             return cartIn;

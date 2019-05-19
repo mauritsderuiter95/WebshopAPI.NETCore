@@ -47,9 +47,9 @@ namespace backend.Services
             return user;
         }
 
-        public User GetByUserName(string userName)
+        public User GetByUserName(string id)
         {
-            User user = _users.Find<User>(x => x.Username == userName).FirstOrDefault();
+            User user = _users.Find<User>(x => x.Id == id).FirstOrDefault();
             user.Password = null;
             user.Token = null;
             return user;
@@ -144,7 +144,7 @@ namespace backend.Services
                 var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
                 var claims = new List<Claim>
                 {
-                    new Claim(ClaimTypes.Name, user.Username),
+                    new Claim(ClaimTypes.Name, user.Id),
                     new Claim(ClaimTypes.Role, user.Role)
                 };
                 var tokenDescriptor = new SecurityTokenDescriptor

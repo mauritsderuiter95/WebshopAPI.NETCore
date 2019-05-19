@@ -32,7 +32,7 @@ namespace backend.Models
         [BsonElement("LongDescription")]
         public string LongDescription { get; set; }
 
-        [BsonElement("Photos")]
-        public List<Photo> Photos { get; set; }
+        [BsonElement("Photo")]
+        public Photo Photo { get; set; }
     }
 }

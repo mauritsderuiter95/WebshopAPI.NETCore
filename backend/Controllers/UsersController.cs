@@ -50,9 +50,9 @@ namespace backend.Controllers
         {
             var user = _userService.Get(id);
 
-            string currentUserName = User.Identity.Name;
+            string currentUserId = User.Identity.Name;
 
-            if (user.Username != currentUserName && !User.IsInRole(Role.Admin))
+            if (user.Id != currentUserId && !User.IsInRole(Role.Admin))
             {
                 return Forbid();
             }
@@ -70,11 +70,11 @@ namespace backend.Controllers
         [HttpGet("currentuser", Name = "GetUserByUserName")]
         public ActionResult<User> GetCurrent()
         {
-            string currentUserName = User.Identity.Name;
+            string currentUserId = User.Identity.Name;
 
-            var user = _userService.GetByUserName(currentUserName);
+            var user = _userService.GetByUserName(currentUserId);
 
-            if (user.Username != currentUserName && !User.IsInRole(Role.Admin))
+            if (user.Id != currentUserId && !User.IsInRole(Role.Admin))
             {
                 return Forbid();
             }
@@ -105,8 +105,8 @@ namespace backend.Controllers
         [HttpPut("{id:length(24)}")]
         public ActionResult<Product> Edit(string id, User user)
         {
-            string currentUserName = User.Identity.Name;
-            if (user.Username != currentUserName && !User.IsInRole(Role.Admin))
+            string currentUserId = User.Identity.Name;
+            if (user.Id != currentUserId && !User.IsInRole(Role.Admin))
             {
                 return Forbid();
             }
@@ -120,8 +120,9 @@ namespace backend.Controllers
         [HttpPatch("{id:length(24)}")]
         public ActionResult<Product> Patch(string id, User user)
         {
-            string currentUserName = User.Identity.Name;
-            if (user.Username != currentUserName && !User.IsInRole(Role.Admin))
+            string currentUserId = User.Identity.Name;
+
+            if (user.Id != currentUserId && !User.IsInRole(Role.Admin))
             {
                 return Forbid();
             }

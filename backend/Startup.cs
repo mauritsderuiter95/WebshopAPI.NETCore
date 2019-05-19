@@ -16,6 +16,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using backend.Models;
+using Microsoft.AspNetCore.Http;
 
 namespace backend
 {
@@ -39,11 +40,17 @@ namespace backend
                 builder =>
                 {
                     builder.WithOrigins("http://localhost:8081").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                    builder.WithOrigins("http://localhost:8082").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                    builder.WithOrigins("https://bestellen.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                    builder.WithOrigins("https://wr-automaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
                 });
             });
 
             services.AddScoped<ProductService>();
             services.AddScoped<CartService>();
+            services.AddScoped<OrderService>();
+            services.AddScoped<UploadService>();
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
@@ -92,7 +99,7 @@ namespace backend
 
             app.UseCors(MyAllowSpecificOrigins);
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseMvc();
         }
     }
