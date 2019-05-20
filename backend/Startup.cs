@@ -36,12 +36,13 @@ namespace backend
         {
             services.AddCors(options =>
             {
-                options.AddPolicy(MyAllowSpecificOrigins,
+                options.AddPolicy("AllowSome",
                 builder =>
                 {
                     builder.WithOrigins("http://localhost:8081").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
                     builder.WithOrigins("http://localhost:8082").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
                     builder.WithOrigins("https://bestellen.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                    builder.WithOrigins("https://admin.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
                     builder.WithOrigins("https://wr-automaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
                 });
             });
@@ -97,7 +98,7 @@ namespace backend
 
             app.UseStaticFiles();
 
-            app.UseCors(MyAllowSpecificOrigins);
+            app.UseCors("AllowSome");
 
             //app.UseHttpsRedirection();
             app.UseMvc();
