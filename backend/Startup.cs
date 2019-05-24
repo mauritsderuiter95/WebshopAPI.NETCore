@@ -44,6 +44,9 @@ namespace backend
                     builder.WithOrigins("https://bestellen.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
                     builder.WithOrigins("https://admin.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
                     builder.WithOrigins("https://wr-automaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                    builder.WithOrigins("https://www.wr-automaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                    builder.WithOrigins("https://www.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                    builder.WithOrigins("https://wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
                 });
             });
 
@@ -100,7 +103,7 @@ namespace backend
 
             app.UseCors("AllowSome");
 
-            //app.UseHttpsRedirection();
+            app.UseHttpsRedirection();
             app.UseMvc();
         }
     }

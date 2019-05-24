@@ -19,6 +19,7 @@ namespace backend
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
+                .UseStartup<Startup>()
+                .UseWebRoot(Path.Combine(Directory.GetCurrentDirectory(),"wwwroot"));
     }
 }

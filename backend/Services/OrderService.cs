@@ -19,7 +19,7 @@ namespace backend.Services
         private readonly IMongoCollection<Payment> _payments;
         private readonly IMongoCollection<Order> _orders;
         private readonly IMongoCollection<Cart> _carts;
-        IPaymentClient paymentClient = new PaymentClient("test_MC5zA6qB73bVWubtbSamnHhSfkHVv3");
+        IPaymentClient paymentClient = new PaymentClient("live_6trGNpabstqksMGvKvpexn2zDCTJQT");
 
 
         public OrderService(IConfiguration config)

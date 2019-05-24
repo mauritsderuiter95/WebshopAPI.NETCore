@@ -88,9 +88,17 @@ namespace backend.Controllers
             return user;
         }
 
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [AllowAnonymous]
         [HttpPost]
         public ActionResult<Product> Create(User user)
         {
+            if (!User.IsInRole(Role.Admin))
+            {
+                if (user.Role != Role.User)
+                    return BadRequest(new { message = "Disallowed" });
+            }
+
             user = _userService.Create(user);
 
             if (user == null)
