@@ -86,6 +86,7 @@ namespace backend.Models
         public class MetadataClass
         {
             public string Order_id { get; set; }
+            public string Cart_id { get; set; }
         }
     }
 }

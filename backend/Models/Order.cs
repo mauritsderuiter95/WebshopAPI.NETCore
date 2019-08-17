@@ -17,6 +17,9 @@ namespace backend.Models
         [BsonElement("orderNumber")]
         public int Ordernumber { get; set; }
 
+        [BsonElement("cartId")]
+        public int CartId { get; set; }
+
         [BsonElement("products")]
         public List<CartProduct> Products { get; set; }
 

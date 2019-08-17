@@ -13,6 +13,9 @@ namespace backend.Models
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
 
+        [BsonElement("Company")]
+        public String Company { get; set; }
+
         [BsonElement("FirstName")]
         public string FirstName { get; set; }
 
@@ -34,7 +37,19 @@ namespace backend.Models
         [BsonElement("TokenExpires")]
         public DateTime Expires { get; set; }
 
-        [BsonElement("Adresses")]
-        public List<Address> Adresses { get; set; }
+        //[BsonElement("Adress")]
+        //public List<Address> Adressses { get; set; }
+
+        [BsonElement("Street")]
+        public string Street { get; set; }
+
+        [BsonElement("Street2")]
+        public string Street2 { get; set; }
+
+        [BsonElement("Zipcode")]
+        public string Zipcode { get; set; }
+
+        [BsonElement("City")]
+        public string City { get; set; }
     }
 }

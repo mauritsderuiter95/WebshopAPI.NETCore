@@ -99,10 +99,10 @@ namespace backend.Services
             PaymentRequest paymentRequest = new PaymentRequest()
             {
                 Amount = new Amount(Currency.EUR, total.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)),
-                Description = "Test payment of the example project",
-                RedirectUrl = $"http://localhost:8081/orders/{ order.Id }",
-                Metadata = "{\"order_id\":\"" + order.Id + "\"}",
-                WebhookUrl = "http://fbfca914.ngrok.io/api/orders/webhook"
+                Description = $"Bestelling { order.Ordernumber }",
+                RedirectUrl = $"https://www.wrautomaten.nl/orders/{ order.Id }",
+                Metadata = "{\"order_id\":\"" + order.Id + "\",\"cart_id\":\"" + order.CartId + "\"}",
+                WebhookUrl = "https://backend.wrautomaten.nl/api/orders/webhook"
             };
 
             PaymentResponse paymentResponse = await paymentClient.CreatePaymentAsync(paymentRequest);
@@ -146,15 +146,20 @@ namespace backend.Services
             Payment payment = JsonConvert.DeserializeObject<Payment>(JsonConvert.SerializeObject(result));
 
             Order order = Get(payment.Metadata.Order_id);
+            Cart cart = _carts.Find<Cart>(x => x.Id == payment.Metadata.Cart_id).FirstOrDefault();
 
             order.orderPayment = payment;
 
             if (payment.Status == "Paid")
+            {
                 order.Status = "Betaald";
+            }
             if (payment.Status != "Open" && payment.Status != "Paid")
                 order.Status = "Betaling is mislukt";
 
             Put(payment.Metadata.Order_id, order);
+
+            _carts.DeleteOne(x => x.Id == cart.Id);
 
             return true;
         }
