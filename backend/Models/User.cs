@@ -37,8 +37,8 @@ namespace backend.Models
         [BsonElement("TokenExpires")]
         public DateTime Expires { get; set; }
 
-        //[BsonElement("Adress")]
-        //public List<Address> Adressses { get; set; }
+        [BsonElement("Adress")]
+        public List<Address> Adressses { get; set; }
 
         [BsonElement("Street")]
         public string Street { get; set; }

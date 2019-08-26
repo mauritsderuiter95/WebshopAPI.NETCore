@@ -54,6 +54,7 @@ namespace backend
             services.AddScoped<CartService>();
             services.AddScoped<OrderService>();
             services.AddScoped<UploadService>();
+            services.AddScoped<MachineService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
