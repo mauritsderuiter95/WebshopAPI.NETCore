@@ -39,14 +39,14 @@ namespace backend
                 options.AddPolicy("AllowSome",
                 builder =>
                 {
-                    builder.WithOrigins("http://localhost:8081").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-                    builder.WithOrigins("http://localhost:8082").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-                    builder.WithOrigins("https://bestellen.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-                    builder.WithOrigins("https://admin.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-                    builder.WithOrigins("https://wr-automaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-                    builder.WithOrigins("https://www.wr-automaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-                    builder.WithOrigins("https://www.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
-                    builder.WithOrigins("https://wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials();
+                    builder.WithOrigins("http://localhost:8081").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+                    builder.WithOrigins("http://localhost:8082").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+                    builder.WithOrigins("https://bestellen.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+                    builder.WithOrigins("https://admin.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+                    builder.WithOrigins("https://wr-automaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+                    builder.WithOrigins("https://www.wr-automaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+                    builder.WithOrigins("https://www.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+                    builder.WithOrigins("https://wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
                 });
             });
 
@@ -91,6 +91,8 @@ namespace backend
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseCors("AllowSome");
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -102,7 +104,8 @@ namespace backend
 
             app.UseStaticFiles();
 
-            app.UseCors("AllowSome");
+            //app.UseDeveloperExceptionPage();
+            //app.UseDatabaseErrorPage();
 
             app.UseHttpsRedirection();
             app.UseMvc();
