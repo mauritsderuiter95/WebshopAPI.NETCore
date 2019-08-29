@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace backend.Controllers
 {
@@ -126,18 +127,29 @@ namespace backend.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPatch("{id:length(24)}")]
-        public ActionResult<Product> Patch(string id, User user)
+        public ActionResult<Product> Patch(string id, JsonPatchDocument patchDoc)
         {
-            string currentUserId = User.Identity.Name;
-
-            if (user.Id != currentUserId && !User.IsInRole(Role.Admin))
+            if (patchDoc != null)
             {
-                return Forbid();
+                User user = _userService.Get(id);
+
+                string oldPassword = user.Password;
+
+                patchDoc.ApplyTo(user);
+
+                string newPassword = user.Password;
+
+                if (oldPassword == newPassword)
+                    user = _userService.Patch(user, false);
+                else
+                    user = _userService.Patch(user, true);
+
+                return CreatedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
             }
-
-            user = _userService.Patch(id, user);
-
-            return CreatedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
+            else
+            {
+                return null;
+            }
         }
     }
 }

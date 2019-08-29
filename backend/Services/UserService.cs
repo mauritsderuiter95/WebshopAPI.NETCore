@@ -114,23 +114,14 @@ namespace backend.Services
             return user;
         }
 
-        public User Patch(string id, User user)
+        public User Patch(User user, bool newPassword)
         {
-            User oldUser = _users.Find<User>(x => x.Id == id).FirstOrDefault();
-
-            foreach (var property in user.GetType().GetProperties())
+            if(newPassword)
             {
-
+                user.Password = CreateHash(user.Password, _passwordSalt.Salt);
+                user = CreateToken(user);
             }
-
-            user.Token = null;
-            user.Password = null;
-            return user;
-
-
-            user.Password = CreateHash(user.Password, _passwordSalt.Salt);
-            user = CreateToken(user);
-            _users.ReplaceOne(x => x.Id == id, user);
+            _users.ReplaceOne(x => x.Id == user.Id, user);
             user.Password = null;
             return user;
         }
