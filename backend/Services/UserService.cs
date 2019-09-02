@@ -39,15 +39,18 @@ namespace backend.Services
             _users = database.GetCollection<User>("Users");
         }
 
-        public User Get(string id)
+        public User Get(string id, bool withPw = false)
         {
             User user = _users.Find<User>(x => x.Id == id).FirstOrDefault();
-            user.Password = null;
-            user.Token = null;
+            if (!withPw)
+            {
+                user.Password = null;
+                user.Token = null;
+            }
             return user;
         }
 
-        public User GetByUserName(string id)
+        public User Get(string id)
         {
             User user = _users.Find<User>(x => x.Id == id).FirstOrDefault();
             user.Password = null;

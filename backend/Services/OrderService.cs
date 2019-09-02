@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 namespace backend.Services
@@ -34,11 +35,11 @@ namespace backend.Services
         public List<Order> Get(int? limit)
         {
             if(limit == null)
-                return _orders.Find<Order>(Order => true).SortByDescending(x => x.Created).ToList();
+                return _orders.Find<Order>(Order => true).SortByDescending(x => x.Ordernumber).ToList();
             else
             {
                 int limitInt = limit.Value;
-                return _orders.Find<Order>(Order => true).SortByDescending(x => x.Created).ToList().Take(limitInt).ToList();
+                return _orders.Find<Order>(Order => true).SortByDescending(x => x.Ordernumber).ToList().Take(limitInt).ToList();
             } 
         }
 
@@ -50,22 +51,22 @@ namespace backend.Services
         public List<Order> Get(User user, int? limit)
         {
             if (limit == null)
-                return _orders.Find<Order>(x => x.User == user.Id).SortByDescending(x => x.Created).ToList();
+                return _orders.Find<Order>(x => x.User.Id == user.Id).SortByDescending(x => x.Created).ToList();
             else
             {
                 int limitInt = limit.Value;
-                return _orders.Find<Order>(x => x.User == user.Id).SortByDescending(x => x.Created).ToList().Take(limitInt).ToList();
+                return _orders.Find<Order>(x => x.User.Id == user.Id).SortByDescending(x => x.Created).ToList().Take(limitInt).ToList();
             }
         }
 
-        public async Task<string> Create(string cartId, string user)
+        public async Task<string> Create(string cartId, User user)
         {
             Order order = new Order();
             Cart cart = _carts.Find<Cart>(x => x.Id == cartId).FirstOrDefault();
 
             order.Products = cart.Products;
 
-            if (!string.IsNullOrEmpty(user))
+            if (user != null)
                 order.User = user;
 
             //_carts.DeleteOne(x => x.Id == cartId);
@@ -79,6 +80,14 @@ namespace backend.Services
             _orders.InsertOne(order);
 
             order.Ordernumber = GetNextSequenceValue();
+
+            var key = new byte[32];
+            RandomNumberGenerator.Create().GetBytes(key);
+            string base64Secret = Convert.ToBase64String(key);
+            // make safe for url
+            string keyEncoded = base64Secret.TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+            order.Key = keyEncoded;
 
             order = await Payment(order);
 

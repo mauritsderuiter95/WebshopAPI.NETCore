@@ -73,7 +73,7 @@ namespace backend.Controllers
         {
             string currentUserId = User.Identity.Name;
 
-            var user = _userService.GetByUserName(currentUserId);
+            var user = _userService.Get(currentUserId);
 
             if (user.Id != currentUserId && !User.IsInRole(Role.Admin))
             {
@@ -131,7 +131,7 @@ namespace backend.Controllers
         {
             if (patchDoc != null)
             {
-                User user = _userService.Get(id);
+                User user = _userService.Get(id, true);
 
                 string oldPassword = user.Password;
 

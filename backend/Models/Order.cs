@@ -27,7 +27,7 @@ namespace backend.Models
         public Payment orderPayment { get; set; }
 
         [BsonElement("user")]
-        public string User { get; set; }
+        public User User { get; set; }
 
         [BsonElement("token")]
         public string Token { get; set; }
@@ -38,5 +38,7 @@ namespace backend.Models
         [BsonElement("status")]
         public string Status { get; set; }
         
+        [BsonElement("key")]
+        public string Key { get; set; }
     }
 }

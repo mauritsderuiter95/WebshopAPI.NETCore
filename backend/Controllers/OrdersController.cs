@@ -43,12 +43,32 @@ namespace backend.Controllers
 
             return orders;
         }
-        
+
         // GET: api/Payments/5
+        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("{id}", Name = "Get")]
-        public Order Get(string id)
+        public ActionResult<Order> Get(string id, [FromQuery]string key)
         {
-            return _orderService.Get(id);
+            User user = new Models.User();
+
+            if(!string.IsNullOrEmpty(User.Identity.Name))
+                user = _userService.Get(User.Identity.Name);
+
+            Order order =_orderService.Get(id);
+
+            if (order.User.Id == user.Id)
+            {
+                return order;
+            }
+            else if (order.Key == key)
+            {
+                return order;
+            }
+            else
+            {
+                return BadRequest();
+            }
         }
 
         [AllowAnonymous]
@@ -56,7 +76,10 @@ namespace backend.Controllers
         [HttpPost]
         public ActionResult<string> Post(Cart cart)
         {
-            string user = User.Identity.Name;
+            string username = User.Identity.Name;
+
+            User user = _userService.Get(username);
+
             return _orderService.Create(cart.Id, user).Result;
         }
 

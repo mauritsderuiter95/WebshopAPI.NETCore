@@ -51,5 +51,8 @@ namespace backend.Models
 
         [BsonElement("City")]
         public string City { get; set; }
+
+        [BsonElement("Phone")]
+        public string Phone { get; set; }
     }
 }
