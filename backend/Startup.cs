@@ -56,6 +56,7 @@ namespace backend
             services.AddScoped<UploadService>();
             services.AddScoped<MachineService>();
             services.AddScoped<VerificationService>();
+            services.AddScoped<MailService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);

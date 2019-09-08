@@ -20,7 +20,8 @@ namespace backend.Services
         private readonly IMongoCollection<Payment> _payments;
         private readonly IMongoCollection<Order> _orders;
         private readonly IMongoCollection<Cart> _carts;
-        IPaymentClient paymentClient = new PaymentClient("live_6trGNpabstqksMGvKvpexn2zDCTJQT");
+        private static string _apikey;
+        IPaymentClient paymentClient = new PaymentClient(_apikey);
 
 
         public OrderService(IConfiguration config)
@@ -30,6 +31,7 @@ namespace backend.Services
             _orders = database.GetCollection<Order>("Orders");
             _payments = database.GetCollection<Payment>("Payments");
             _carts = database.GetCollection<Cart>("Carts");
+            _apikey = config.GetSection("Apikeys")["Mollie"];
         }
 
         public List<Order> Get(int? limit)

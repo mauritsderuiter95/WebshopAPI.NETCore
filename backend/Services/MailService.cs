@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using backend.Models;
 using backend.Models.Mails;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 
 namespace backend.Services
@@ -16,7 +17,7 @@ namespace backend.Services
 
         private Mail settings = new Mail();
 
-        public MailService()
+        public MailService(IConfiguration config)
         {
             EmailAddress ownMailAddress = new EmailAddress();
             ownMailAddress.Email = "maurits@wr-automaten.nl";
@@ -24,7 +25,7 @@ namespace backend.Services
             settings.Sender = ownMailAddress;
             settings.ReplyTo = ownMailAddress;
 
-            string apikey = "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";
+            string apikey = config.GetSection("Apikeys")["Sendinblue"];
 
             client.DefaultRequestHeaders.Add("api-key", apikey);
             //client.DefaultRequestHeaders.Add("accept", "application/json");
