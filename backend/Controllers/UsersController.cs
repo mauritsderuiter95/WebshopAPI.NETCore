@@ -92,20 +92,16 @@ namespace backend.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [AllowAnonymous]
         [HttpPost]
-        public ActionResult<Product> Create(User user)
+        public async Task<ActionResult<Product>> Create(User user)
         {
-            if (!User.IsInRole(Role.Admin))
-            {
-                if (user.Role != Role.User)
-                    return BadRequest(new { message = "Disallowed" });
-            }
-
-            user = _userService.Create(user);
+            user = await _userService.CreateAsync(user);
 
             if (user == null)
-                return BadRequest(new { message = "Username is taken." });
+                return BadRequest(new { message = "Er is al een account met dit e-mailadres." });
             if (user.Id == "-2")
                 return BadRequest(new { message = "Creating JWT token failed. Contact the software distributor." });
+            if (user.Id == "-3")
+                return BadRequest(new { message = "Sending verification email failed. Contact the software distributor." });
 
             return CreatedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
         }

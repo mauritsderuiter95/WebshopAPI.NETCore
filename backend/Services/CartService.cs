@@ -29,8 +29,6 @@ namespace backend.Services
         public Cart Get(string id)
         {
             Cart cart = _carts.Find<Cart>(x => x.Id == id).FirstOrDefault();
-            if (cart == null)
-                return null;
             return cart;
         }
 

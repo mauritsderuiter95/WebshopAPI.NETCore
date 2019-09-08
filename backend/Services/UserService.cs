@@ -14,18 +14,13 @@ using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 
 namespace backend.Services
 {
-    public interface IUserService
-    {
-        User Authenticate(string username, string password);
-        IEnumerable<User> GetAll();
-        User Create(User user);
-    }
-
     public class UserService
     {
         private readonly IMongoCollection<User> _users;
         private readonly AppSettings _appSettings;
         private readonly PasswordSalt _passwordSalt;
+        private readonly VerificationService _verificationService;
+        private readonly MailService _mailService;
 
         public UserService(IConfiguration config)
         {
@@ -37,6 +32,8 @@ namespace backend.Services
             var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
             var database = client.GetDatabase("wrautomaten");
             _users = database.GetCollection<User>("Users");
+            _verificationService = new VerificationService(config);
+            _mailService = new MailService();
         }
 
         public User Get(string id, bool withPw = false)
@@ -67,6 +64,9 @@ namespace backend.Services
             if (user == null)
                 return null;
 
+            if (!user.Active)
+                return null;
+
             user = CreateToken(user);
 
             user.Expires = DateTime.Now.AddDays(30);
@@ -88,12 +88,14 @@ namespace backend.Services
             return user;
         }
 
-        public User Create(User user)
+        public async Task<User> CreateAsync(User user)
         {
             if (_users.Find(User => true).ToList().Where(x => x.Username == user.Username).FirstOrDefault() != null)
                 return null;
 
+            user.Role = "User";
             user.Password = CreateHash(user.Password, _passwordSalt.Salt);
+            _users.InsertOne(user);
             user = CreateToken(user);
             if (user == null)
             {
@@ -103,7 +105,18 @@ namespace backend.Services
                 };
                 return user;
             }
-            _users.InsertOne(user);
+
+            Verification verification = _verificationService.Create(user.Id);
+
+            if (!await _mailService.SendConfirmation(verification, user))
+            {
+                user = new User
+                {
+                    Id = "-3"
+                };
+                return user;
+            }
+
             user.Password = null;
             return user;
         }

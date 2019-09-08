@@ -55,6 +55,7 @@ namespace backend
             services.AddScoped<OrderService>();
             services.AddScoped<UploadService>();
             services.AddScoped<MachineService>();
+            services.AddScoped<VerificationService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
@@ -104,8 +105,8 @@ namespace backend
 
             app.UseStaticFiles();
 
-            //app.UseDeveloperExceptionPage();
-            //app.UseDatabaseErrorPage();
+            app.UseDeveloperExceptionPage();
+            app.UseDatabaseErrorPage();
 
             app.UseHttpsRedirection();
             app.UseMvc();

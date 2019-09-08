@@ -54,5 +54,8 @@ namespace backend.Models
 
         [BsonElement("Phone")]
         public string Phone { get; set; }
+
+        [BsonElement("Active")]
+        public bool Active { get; set; }
     }
 }
