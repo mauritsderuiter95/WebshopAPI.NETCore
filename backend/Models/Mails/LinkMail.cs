@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace backend.Models.Mails
 {
-    public class LinkParam : Param
+    public class LinkMail : Mail
     {
-        [JsonProperty("LINK")]
-        public string Link { get; set; }
+        [JsonProperty("params")]
+        public Param JsonParams { get; set; }
     }
 }

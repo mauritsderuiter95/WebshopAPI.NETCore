@@ -34,7 +34,23 @@ namespace backend.Controllers
             if (user.Id == "-2")
                 return BadRequest(new { message = "Creating JWT token failed. Contact the software distributor." });
 
-            return Ok(user);
+            user.Password = null;
+            return Accepted(user);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("passwordreset")]
+        public async Task<ActionResult> PasswordResetAsync(User userIn)
+        {
+            var user = _userService.GetByUsername(userIn.Username);
+
+            if (user != null)
+            {
+                if (!await _userService.ResetPasswordAsync(user))
+                    return BadRequest(new { message = "Verzending mislukt." });
+            }
+
+            return Accepted();
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = Role.Admin)]
@@ -54,16 +70,14 @@ namespace backend.Controllers
             string currentUserId = User.Identity.Name;
 
             if (user.Id != currentUserId && !User.IsInRole(Role.Admin))
-            {
                 return Forbid();
-            }
 
 
             if (user == null)
-            {
                 return NotFound();
-            }
 
+            user.Password = null;
+            user.Token = null;
             return user;
         }
 
@@ -76,17 +90,13 @@ namespace backend.Controllers
             var user = _userService.Get(currentUserId);
 
             if (user.Id != currentUserId && !User.IsInRole(Role.Admin))
-            {
                 return Forbid();
-            }
 
 
             if (user == null)
-            {
                 return NotFound();
-            }
 
-            return user;
+            return AcceptedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -123,29 +133,34 @@ namespace backend.Controllers
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPatch("{id:length(24)}")]
-        public ActionResult<Product> Patch(string id, JsonPatchDocument patchDoc)
+        public ActionResult<Product> Patch(string id, JsonPatchDocument patchDoc, [FromQuery]string key)
         {
-            if (patchDoc != null)
+            if (patchDoc == null)
+                BadRequest(new { message = "No document given" });
+
+            User user;
+
+            if (key != null)
             {
-                User user = _userService.Get(id, true);
-
-                string oldPassword = user.Password;
-
-                patchDoc.ApplyTo(user);
-
-                string newPassword = user.Password;
-
-                if (oldPassword == newPassword)
-                    user = _userService.Patch(user, false);
-                else
-                    user = _userService.Patch(user, true);
-
-                return CreatedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
+                user = _userService.GetByKey(key);
+                if (user == null)
+                    return BadRequest(new { message = "Deze key bestaat niet." });
             }
             else
-            {
-                return null;
-            }
+                user = _userService.Get(id, true);
+
+            string oldPassword = user.Password;
+
+            patchDoc.ApplyTo(user);
+
+            string newPassword = user.Password;
+
+            if (oldPassword == newPassword)
+                user = _userService.Patch(user, false);
+            else
+                user = _userService.Patch(user, true);
+
+            return CreatedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
         }
     }
 }

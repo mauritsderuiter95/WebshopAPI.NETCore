@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using System.Security.Cryptography;
 
 namespace backend.Services
 {
@@ -33,25 +34,24 @@ namespace backend.Services
             var database = client.GetDatabase("wrautomaten");
             _users = database.GetCollection<User>("Users");
             _verificationService = new VerificationService(config);
-            _mailService = new MailService();
-        }
-
-        public User Get(string id, bool withPw = false)
-        {
-            User user = _users.Find<User>(x => x.Id == id).FirstOrDefault();
-            if (!withPw)
-            {
-                user.Password = null;
-                user.Token = null;
-            }
-            return user;
+            _mailService = new MailService(config);
         }
 
         public User Get(string id)
         {
             User user = _users.Find<User>(x => x.Id == id).FirstOrDefault();
-            user.Password = null;
-            user.Token = null;
+            return user;
+        }
+
+        public User GetByUsername(string username)
+        {
+            User user = _users.Find<User>(x => x.Username == username).FirstOrDefault();
+            return user;
+        }
+
+        public User GetByKey(string key)
+        {
+            User user = _users.Find<User>(x => x.ResetKey == key).FirstOrDefault();
             return user;
         }
 
@@ -88,6 +88,19 @@ namespace backend.Services
             return user;
         }
 
+        public async Task<bool> ResetPasswordAsync(User user)
+        {
+            var key = new byte[32];
+            RandomNumberGenerator.Create().GetBytes(key);
+            string base64Secret = Convert.ToBase64String(key);
+            // make safe for url
+            user.ResetKey = base64Secret.TrimEnd('=').Replace('+', '-').Replace('/', '_');
+
+            _users.ReplaceOne(x => x.Id == user.Id, user);
+
+            return await _mailService.SendPasswordReset(user);
+        }
+
         public async Task<User> CreateAsync(User user)
         {
             if (_users.Find(User => true).ToList().Where(x => x.Username == user.Username).FirstOrDefault() != null)
@@ -117,7 +130,6 @@ namespace backend.Services
                 return user;
             }
 
-            user.Password = null;
             return user;
         }
 
@@ -126,7 +138,6 @@ namespace backend.Services
             user.Password = CreateHash(user.Password, _passwordSalt.Salt);
             user = CreateToken(user);
             _users.ReplaceOne(x => x.Id == id, user);
-            user.Password = null;
             return user;
         }
 
@@ -138,7 +149,6 @@ namespace backend.Services
                 user = CreateToken(user);
             }
             _users.ReplaceOne(x => x.Id == user.Id, user);
-            user.Password = null;
             return user;
         }
 

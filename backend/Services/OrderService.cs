@@ -21,7 +21,8 @@ namespace backend.Services
         private readonly IMongoCollection<Order> _orders;
         private readonly IMongoCollection<Cart> _carts;
         private static string _apikey;
-        IPaymentClient paymentClient = new PaymentClient(_apikey);
+        private IPaymentClient _paymentClient;
+        private readonly MailService _mailService;
 
 
         public OrderService(IConfiguration config)
@@ -32,6 +33,8 @@ namespace backend.Services
             _payments = database.GetCollection<Payment>("Payments");
             _carts = database.GetCollection<Cart>("Carts");
             _apikey = config.GetSection("Apikeys")["Mollie"];
+            _paymentClient = new PaymentClient(_apikey);
+            _mailService = new MailService(config);
         }
 
         public List<Order> Get(int? limit)
@@ -87,13 +90,13 @@ namespace backend.Services
             RandomNumberGenerator.Create().GetBytes(key);
             string base64Secret = Convert.ToBase64String(key);
             // make safe for url
-            string keyEncoded = base64Secret.TrimEnd('=').Replace('+', '-').Replace('/', '_');
-
-            order.Key = keyEncoded;
+            order.Key = base64Secret.TrimEnd('=').Replace('+', '-').Replace('/', '_');
 
             order = await Payment(order);
 
             _orders.ReplaceOne(x => x.Id == order.Id, order);
+
+            _mailService.SendOrderConfirmation(order, user);
 
             return order.orderPayment._links.Checkout.Href;
         }
@@ -116,7 +119,7 @@ namespace backend.Services
                 WebhookUrl = "https://backend.wrautomaten.nl/api/orders/webhook"
             };
 
-            PaymentResponse paymentResponse = await paymentClient.CreatePaymentAsync(paymentRequest);
+            PaymentResponse paymentResponse = await _paymentClient.CreatePaymentAsync(paymentRequest);
 
             Payment payment = JsonConvert.DeserializeObject<Payment>(JsonConvert.SerializeObject(paymentResponse));
 
@@ -152,12 +155,12 @@ namespace backend.Services
         {
             mollieId = mollieId.Substring(3);
 
-            PaymentResponse result = await paymentClient.GetPaymentAsync(mollieId);
+            PaymentResponse result = await _paymentClient.GetPaymentAsync(mollieId);
 
             Payment payment = JsonConvert.DeserializeObject<Payment>(JsonConvert.SerializeObject(result));
 
             Order order = Get(payment.Metadata.Order_id);
-            Cart cart = _carts.Find<Cart>(x => x.Id == payment.Metadata.Cart_id).FirstOrDefault();
+            //Cart cart = _carts.Find<Cart>(x => x.Id == payment.Metadata.Cart_id).FirstOrDefault();
 
             order.orderPayment = payment;
 
@@ -170,7 +173,7 @@ namespace backend.Services
 
             Put(payment.Metadata.Order_id, order);
 
-            _carts.DeleteOne(x => x.Id == cart.Id);
+            //_carts.DeleteOne(x => x.Id == cart.Id);
 
             return true;
         }

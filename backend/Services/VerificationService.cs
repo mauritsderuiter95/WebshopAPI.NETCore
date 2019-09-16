@@ -27,6 +27,10 @@ namespace backend.Services
         public Verification Get(string id)
         {
             Verification verification = _verifications.Find<Verification>(x => x.Id == id).FirstOrDefault();
+
+            if (verification.Used == true)
+                return null;
+
             verification.Used = true;
 
             _verifications.ReplaceOne(x => x.Id == id, verification);

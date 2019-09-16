@@ -31,6 +31,9 @@ namespace backend.Models
         [BsonElement("Token")]
         public string Token { get; set; }
 
+        [BsonElement("ResetKey")]
+        public string ResetKey { get; set; }
+
         [BsonElement("UserRoles")]
         public string Role { get; set; }
 

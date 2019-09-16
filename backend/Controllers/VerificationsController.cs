@@ -25,9 +25,9 @@ namespace backend.Controllers
         [HttpGet("{id:length(24)}", Name = "GetVerification")]
         public ActionResult<Verification> Get(string id)
         {
-            var verification = _verificationService.Get(id);
+            Verification verification = _verificationService.Get(id);
 
-            if (verification.Used)
+            if (verification == null)
             {
                 return BadRequest(new { message = "Email already verified." });
             }
