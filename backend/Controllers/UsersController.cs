@@ -147,7 +147,7 @@ namespace backend.Controllers
                     return BadRequest(new { message = "Deze key bestaat niet." });
             }
             else
-                user = _userService.Get(id, true);
+                user = _userService.Get(id);
 
             string oldPassword = user.Password;
 

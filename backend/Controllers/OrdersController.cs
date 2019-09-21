@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using backend.Models;
 using backend.Services;
+using IronPdf;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -57,13 +59,51 @@ namespace backend.Controllers
 
             Order order =_orderService.Get(id);
 
-            if (order.User.Id == user.Id)
+            if (order.User.Id == user.Id || User.IsInRole(Role.Admin))
             {
                 return order;
             }
             else if (order.Key == key)
             {
                 return order;
+            }
+            else
+            {
+                return BadRequest();
+            }
+        }
+
+        [AllowAnonymous]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpGet("{id}/invoice", Name = "GetInvoice")]
+        public IActionResult GetPdf(string id, [FromQuery]string key)
+        {
+            User user = new Models.User();
+
+            if (!string.IsNullOrEmpty(User.Identity.Name))
+                user = _userService.Get(User.Identity.Name);
+
+            Order order = _orderService.Get(id);
+
+            if (order.User.Id == user.Id || User.IsInRole(Role.Admin) || order.Key == key)
+            {
+                var renderer = new IronPdf.HtmlToPdf();
+                renderer.PrintOptions.CssMediaType = PdfPrintOptions.PdfCssMediaType.Print;
+                renderer.PrintOptions.PrintHtmlBackgrounds = true;
+                renderer.PrintOptions.PaperSize = PdfPrintOptions.PdfPaperSize.A4;
+
+                var pdf = renderer.RenderUrlAsPdf($"https://www.wrautomaten.nl/orders/{order.Id}/factuur/?key={order.Key}");
+                var dataBytes = new MemoryStream(pdf.BinaryData);
+
+                HttpResponseMessage responseMessage = new HttpResponseMessage
+                {
+                    Content = new StreamContent(dataBytes)
+                };
+                responseMessage.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
+                responseMessage.Content.Headers.ContentDisposition.FileName = $"factuur{order.Ordernumber}.pdf";
+                responseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
+
+                return new HttpResponseMessageResult(responseMessage);
             }
             else
             {
