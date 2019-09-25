@@ -30,5 +30,8 @@ namespace backend.Models.Mails.OrderConfirmation
         public string FirstName { get; set; }
 
         public string Payment { get; set; }
+
+        [JsonProperty("LINK")]
+        public string Link { get; set; }
     }
 }

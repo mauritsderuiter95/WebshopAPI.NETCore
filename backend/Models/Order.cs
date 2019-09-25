@@ -26,14 +26,14 @@ namespace backend.Models
         [BsonElement("orderPayment")]
         public Payment orderPayment { get; set; }
 
+        [BsonElement("sendingCosts")]
+        public decimal SendingCosts { get; set; }
+
         [BsonElement("user")]
         public User User { get; set; }
 
-        [BsonElement("token")]
-        public string Token { get; set; }
-
         [BsonElement("created")]
-        public string Created { get; set; }
+        public DateTime Created { get; set; }
 
         [BsonElement("status")]
         public string Status { get; set; }

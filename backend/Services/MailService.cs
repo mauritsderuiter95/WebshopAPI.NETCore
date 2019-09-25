@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using backend.Models;
 using backend.Models.Mails;
+using backend.Models.Mails.DailyUpdate;
 using backend.Models.Mails.OrderConfirmation;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
@@ -16,16 +17,16 @@ namespace backend.Services
     public class MailService
     {
         private static readonly HttpClient client = new HttpClient();
-        private Mail settings = new Mail();
-        HttpRequestMessage requestMessage;
+        private readonly Mail settings = new Mail();
+        private readonly HttpRequestMessage requestMessage;
+        private readonly EmailAddress _emailAddress = new EmailAddress();
 
         public MailService(IConfiguration config)
         {
-            EmailAddress ownMailAddress = new EmailAddress();
-            ownMailAddress.Email = "info@wrautomaten.nl";
+            _emailAddress.Email = "info@wrautomaten.nl";
 
-            settings.Sender = ownMailAddress;
-            settings.ReplyTo = ownMailAddress;
+            settings.Sender = _emailAddress;
+            settings.ReplyTo = _emailAddress;
 
             string apikey = config.GetSection("Apikeys")["Sendinblue"];
 
@@ -56,17 +57,13 @@ namespace backend.Services
 
             var response = await client.SendAsync(requestMessage);
 
-            Console.WriteLine(response.StatusCode);
-            Console.WriteLine(response.Content.ToString());
-            Console.WriteLine(response.ReasonPhrase);
-
             if (response.IsSuccessStatusCode)
                 return true;
             else
                 return false;
         }
 
-        public async void SendOrderConfirmation(Order order, User user)
+        public void SendOrderConfirmation(Order order, User user)
         {
             var serialized = JsonConvert.SerializeObject(settings);
             var confirmationMail = JsonConvert.DeserializeObject<OrderConfirmationMail>(serialized);
@@ -98,7 +95,7 @@ namespace backend.Services
                 ProductsProduct productsProduct = new ProductsProduct();
                 productsProduct.ProductName = product.ProductName;
                 productsProduct.Image = product.Photo.Url;
-                productsProduct.ShortDescription = $"€{product.ProductPrice.ToString("0.00")}";
+                productsProduct.ShortDescription = $"€{product.ProductPrice:0.00}";
 
                 confirmationMail.Params.Products.Add(productsProduct);
             }
@@ -106,17 +103,15 @@ namespace backend.Services
             confirmationMail.Params.OrderNumber = order.Ordernumber.ToString();
             confirmationMail.Params.Payment = order.orderPayment._links.Checkout.Href.Replace("https://", "");
 
+            confirmationMail.Params.Link = $"www.wrautomaten.nl/orders/{order.Id}?key={order.Key}";
+
             confirmationMail.To = emailAddresses;
 
             var jsonContent = JsonConvert.SerializeObject(confirmationMail);
 
             requestMessage.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-            var response = await client.SendAsync(requestMessage);
-
-            Console.WriteLine(response.StatusCode);
-            string receiveStream = await response.Content.ReadAsStringAsync();
-            Console.WriteLine(receiveStream);
+            client.SendAsync(requestMessage);
         }
 
         public async Task<bool> SendPasswordReset(User user)
@@ -142,14 +137,48 @@ namespace backend.Services
 
             var response = await client.SendAsync(requestMessage);
 
-            Console.WriteLine(response.StatusCode);
-            Console.WriteLine(response.Content.ToString());
-            Console.WriteLine(response.ReasonPhrase);
+            return response.IsSuccessStatusCode;
+        }
 
-            if (response.IsSuccessStatusCode)
-                return true;
-            else
-                return false;
+        public void SendDailyUpdate(List<Order> orders)
+        {
+            if (orders.Count == 0)
+                return;
+            
+            var serialized = JsonConvert.SerializeObject(settings);
+            var dailyUpdateMail = JsonConvert.DeserializeObject<DailyUpdateMail>(serialized);
+
+            dailyUpdateMail.TemplateId = 4;
+
+            List<EmailAddress> toEmailAddresses = new List<EmailAddress>();
+            EmailAddress address = new EmailAddress();
+            address.Email = "mauritsderuiter95@gmail.com";
+            toEmailAddresses.Add(address);
+            dailyUpdateMail.To = toEmailAddresses;
+
+            List<MailOrder> mailOrders = new List<MailOrder>();
+
+            foreach (Order order in orders)
+            {
+                MailOrder mailOrder = new MailOrder();
+
+                mailOrder.Company = order.User.Company;
+                mailOrder.LastName = order.User.LastName;
+                mailOrder.OrderNumber = order.Ordernumber.ToString();
+                mailOrder.Amount = order.Products.Select(x => x.Count * x.ProductPrice).Sum();
+                mailOrder.Amount += order.SendingCosts;
+
+                mailOrders.Add(mailOrder);
+            }
+
+            dailyUpdateMail.Params = new DailyUpdateParams();
+            dailyUpdateMail.Params.Orders = new List<MailOrder>();
+            dailyUpdateMail.Params.Orders = mailOrders;
+
+            var jsonContent = JsonConvert.SerializeObject(dailyUpdateMail);
+            requestMessage.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            client.SendAsync(requestMessage);
         }
     }
 }

@@ -6,9 +6,10 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using backend.Models;
 using backend.Services;
-using IronPdf;
+using iText.Kernel.Pdf;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -57,6 +58,7 @@ namespace backend.Controllers
             if(!string.IsNullOrEmpty(User.Identity.Name))
                 user = _userService.Get(User.Identity.Name);
 
+            Console.WriteLine(id);
             Order order =_orderService.Get(id);
 
             if (order.User.Id == user.Id || User.IsInRole(Role.Admin))
@@ -87,28 +89,18 @@ namespace backend.Controllers
 
             if (order.User.Id == user.Id || User.IsInRole(Role.Admin) || order.Key == key)
             {
-                var renderer = new IronPdf.HtmlToPdf();
-                renderer.PrintOptions.CssMediaType = PdfPrintOptions.PdfCssMediaType.Print;
-                renderer.PrintOptions.PrintHtmlBackgrounds = true;
-                renderer.PrintOptions.PaperSize = PdfPrintOptions.PdfPaperSize.A4;
-
-                var pdf = renderer.RenderUrlAsPdf($"https://www.wrautomaten.nl/orders/{order.Id}/factuur/?key={order.Key}");
-                var dataBytes = new MemoryStream(pdf.BinaryData);
+                var pdf = _orderService.CreatePDF(order);
 
                 HttpResponseMessage responseMessage = new HttpResponseMessage
                 {
-                    Content = new StreamContent(dataBytes)
+                    Content = new StreamContent(pdf)
                 };
-                responseMessage.Content.Headers.ContentDisposition = new System.Net.Http.Headers.ContentDispositionHeaderValue("attachment");
-                responseMessage.Content.Headers.ContentDisposition.FileName = $"factuur{order.Ordernumber}.pdf";
+                responseMessage.Content.Headers.Add("Content-disposition", "attachment; filename=factuur.pdf");
                 responseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
 
                 return new HttpResponseMessageResult(responseMessage);
             }
-            else
-            {
-                return BadRequest();
-            }
+            return BadRequest();
         }
 
         [AllowAnonymous]

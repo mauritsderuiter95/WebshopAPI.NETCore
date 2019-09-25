@@ -16,24 +16,39 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using backend.Models;
+using Hangfire;
+using Hangfire.Mongo;
 using Microsoft.AspNetCore.Http;
 
 namespace backend
 {
     public class Startup
     {
+        private readonly IConfiguration _configuration;
+
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            _configuration = configuration;
         }
 
         public IConfiguration Configuration { get; }
 
-        readonly string MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            var migrationOptions = new MongoMigrationOptions
+            {
+                Strategy = MongoMigrationStrategy.Migrate,
+                BackupStrategy = MongoBackupStrategy.Collections
+            };
+            var storageOptions = new MongoStorageOptions
+            {
+                // ...
+                MigrationOptions = migrationOptions
+            };
+            services.AddHangfire(config => config.UseMongoStorage(Configuration.GetConnectionString("WrautomatenDb"), "Hangfire", storageOptions));
+
             services.AddCors(options =>
             {
                 options.AddPolicy("AllowSome",
@@ -57,6 +72,7 @@ namespace backend
             services.AddScoped<MachineService>();
             services.AddScoped<VerificationService>();
             services.AddScoped<MailService>();
+            services.AddScoped<SchedulerService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
@@ -96,13 +112,9 @@ namespace backend
             app.UseCors("AllowSome");
 
             if (env.IsDevelopment())
-            {
                 app.UseDeveloperExceptionPage();
-            }
             else
-            {
                 app.UseHsts();
-            }
 
             app.UseStaticFiles();
 
@@ -111,6 +123,16 @@ namespace backend
 
             app.UseHttpsRedirection();
             app.UseMvc();
+
+            app.UseHangfireServer();
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions()
+            {
+                Authorization = new [] { new HangfireAuthorizationFilter() },
+                AppPath = "https://www.wrautomaten.nl"
+            });
+
+            SchedulerService schedulerService = new SchedulerService(_configuration);
+            schedulerService.Startup();
         }
     }
 }
