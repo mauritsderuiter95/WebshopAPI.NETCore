@@ -90,15 +90,7 @@ namespace backend.Controllers
             if (order.User.Id == user.Id || User.IsInRole(Role.Admin) || order.Key == key)
             {
                 var pdf = _orderService.CreatePDF(order);
-
-                HttpResponseMessage responseMessage = new HttpResponseMessage
-                {
-                    Content = new StreamContent(pdf)
-                };
-                responseMessage.Content.Headers.Add("Content-disposition", "attachment; filename=factuur.pdf");
-                responseMessage.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
-
-                return new HttpResponseMessageResult(responseMessage);
+                return File(pdf, "application/pdf", $"Factuur{order.Ordernumber}.pdf");
             }
             return BadRequest();
         }
