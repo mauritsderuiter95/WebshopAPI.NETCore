@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using backend.Models;
 using Hangfire;
 using Microsoft.Extensions.Configuration;
 
@@ -20,7 +21,11 @@ namespace backend.Services
 
         public void Startup()
         {
-            RecurringJob.AddOrUpdate("SendDailyUpdate", () => _mailService.SendDailyUpdate(_orderService.GetFrom(DateTime.Now.AddDays(-1))), "0 16 * * *", TimeZoneInfo.Local);
+            RecurringJob.AddOrUpdate(
+                "SendDailyUpdate", 
+                () => _mailService.SendDailyUpdate(_orderService.GetFrom(DateTime.Now.AddDays(-1))), 
+                "0 16 * * *", 
+                TimeZoneInfo.Local);
         }
 
         public void List()
@@ -28,14 +33,16 @@ namespace backend.Services
 
         }
 
-        public void Add()
+        public void Add(Action action, int days)
         {
-
+            BackgroundJob.Schedule(
+                () => action(),
+                TimeSpan.FromDays(days));
         }
 
         public void Get()
         {
-
+            
         }
 
         public void Edit()

@@ -27,6 +27,7 @@ namespace backend.Services
         private readonly IMongoCollection<Cart> _carts;
         private readonly IPaymentClient _paymentClient;
         private readonly MailService _mailService;
+        private readonly SchedulerService _schedulerService;
 
 
         public OrderService(IConfiguration config)
@@ -38,6 +39,7 @@ namespace backend.Services
             var apikey = config.GetSection("Apikeys")["Mollie"];
             _paymentClient = new PaymentClient(apikey);
             _mailService = new MailService(config);
+            _schedulerService = new SchedulerService(config);
         }
 
         public List<Order> Get(int? limit)
@@ -105,6 +107,8 @@ namespace backend.Services
             _orders.ReplaceOne(x => x.Id == order.Id, order);
 
             _mailService.SendOrderConfirmation(order, user);
+
+            // _schedulerService.Add(() => _mailService.SendOrderConfirmation(order,user), 7);
 
             return order.orderPayment._links.Checkout.Href;
         }
