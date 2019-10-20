@@ -94,7 +94,8 @@ namespace backend.Services
             {
                 ProductsProduct productsProduct = new ProductsProduct();
                 productsProduct.ProductName = product.ProductName;
-                productsProduct.Image = product.Photo.Url;
+                if(product.Photo != null)
+                    productsProduct.Image = product.Photo.Url;
                 productsProduct.ShortDescription = $"€{product.ProductPrice:0.00}";
 
                 confirmationMail.Params.Products.Add(productsProduct);

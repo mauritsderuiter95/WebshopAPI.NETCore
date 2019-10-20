@@ -15,10 +15,10 @@ namespace backend.Models
         public string Id { get; set; }
 
         [BsonElement("orderNumber")]
-        public int Ordernumber { get; set; }
+        public int? Ordernumber { get; set; }
 
         [BsonElement("cartId")]
-        public int CartId { get; set; }
+        public string CartId { get; set; }
 
         [BsonElement("products")]
         public List<CartProduct> Products { get; set; }

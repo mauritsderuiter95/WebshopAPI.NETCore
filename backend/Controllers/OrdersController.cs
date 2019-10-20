@@ -98,13 +98,13 @@ namespace backend.Controllers
         [AllowAnonymous]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
-        public ActionResult<string> Post(Cart cart)
+        public ActionResult<string> Post(Order order)
         {
             string username = User.Identity.Name;
 
             User user = _userService.Get(username);
 
-            return _orderService.Create(cart.Id, user).Result;
+            return _orderService.Create(order, user).Result;
         }
 
         // PUT: api/Payments/5

@@ -27,7 +27,7 @@ namespace backend.Services
         private readonly IMongoCollection<Cart> _carts;
         private readonly IPaymentClient _paymentClient;
         private readonly MailService _mailService;
-        private readonly SchedulerService _schedulerService;
+        // private readonly SchedulerService _schedulerService;
 
 
         public OrderService(IConfiguration config)
@@ -39,7 +39,7 @@ namespace backend.Services
             var apikey = config.GetSection("Apikeys")["Mollie"];
             _paymentClient = new PaymentClient(apikey);
             _mailService = new MailService(config);
-            _schedulerService = new SchedulerService(config);
+            // _schedulerService = new SchedulerService(config);
         }
 
         public List<Order> Get(int? limit)
@@ -74,12 +74,9 @@ namespace backend.Services
             return _orders.Find<Order>(x => x.Created >= date).ToList();
         }
 
-        public async Task<string> Create(string cartId, User user)
+        public async Task<string> Create(Order order, User user)
         {
-            Order order = new Order();
-            Cart cart = _carts.Find<Cart>(x => x.Id == cartId).FirstOrDefault();
-
-            order.Products = cart.Products;
+            Cart cart = _carts.Find<Cart>(x => x.Id == order.CartId).FirstOrDefault();
 
             if (user != null)
                 order.User = user;
@@ -106,7 +103,7 @@ namespace backend.Services
 
             _orders.ReplaceOne(x => x.Id == order.Id, order);
 
-            _mailService.SendOrderConfirmation(order, user);
+            _mailService.SendOrderConfirmation(order, order.User);
 
             // _schedulerService.Add(() => _mailService.SendOrderConfirmation(order,user), 7);
 
@@ -126,7 +123,7 @@ namespace backend.Services
             {
                 Amount = new Amount(Currency.EUR, total.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)),
                 Description = $"Bestelling { order.Ordernumber }",
-                RedirectUrl = $"https://www.wrautomaten.nl/orders/{ order.Id }",
+                RedirectUrl = $"https://www.wrautomaten.nl/orders/{ order.Id }?key={ order.Key }",
                 Metadata = "{\"order_id\":\"" + order.Id + "\",\"cart_id\":\"" + order.CartId + "\"}",
                 WebhookUrl = "https://backend.wrautomaten.nl/api/orders/webhook"
             };
@@ -144,10 +141,7 @@ namespace backend.Services
         {
             Order order = _orders.Find<Order>(x => true).SortByDescending(x => x.Ordernumber).FirstOrDefault();
 
-            if (order != null)
-                return order.Ordernumber + 1;
-            else
-                return DateTime.Now.Year * 10000;
+            return order != null ? order.Ordernumber + 1 ?? 0 : DateTime.Now.Year * 10000;
         }
 
         public MemoryStream CreatePDF(Order order)
