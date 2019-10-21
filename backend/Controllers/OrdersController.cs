@@ -98,7 +98,7 @@ namespace backend.Controllers
         [AllowAnonymous]
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpPost]
-        public ActionResult<string> Post(Order order)
+        public ActionResult<Order> Post(Order order)
         {
             string username = User.Identity.Name;
 

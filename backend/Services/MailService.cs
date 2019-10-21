@@ -94,7 +94,7 @@ namespace backend.Services
             {
                 ProductsProduct productsProduct = new ProductsProduct();
                 productsProduct.ProductName = product.ProductName;
-                if(product.Photo != null)
+                if (product.Photo != null)
                     productsProduct.Image = product.Photo.Url;
                 productsProduct.ShortDescription = $"€{product.ProductPrice:0.00}";
 
@@ -145,7 +145,7 @@ namespace backend.Services
         {
             if (orders.Count == 0)
                 return;
-            
+
             var serialized = JsonConvert.SerializeObject(settings);
             var dailyUpdateMail = JsonConvert.DeserializeObject<DailyUpdateMail>(serialized);
 

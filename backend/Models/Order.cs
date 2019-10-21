@@ -23,6 +23,9 @@ namespace backend.Models
         [BsonElement("products")]
         public List<CartProduct> Products { get; set; }
 
+        [BsonElement("ideal")]
+        public bool Ideal { get; set; }
+
         [BsonElement("orderPayment")]
         public Payment orderPayment { get; set; }
 

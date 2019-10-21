@@ -74,7 +74,7 @@ namespace backend.Services
             return _orders.Find<Order>(x => x.Created >= date).ToList();
         }
 
-        public async Task<string> Create(Order order, User user)
+        public async Task<Order> Create(Order order, User user)
         {
             Cart cart = _carts.Find<Cart>(x => x.Id == order.CartId).FirstOrDefault();
 
@@ -107,7 +107,7 @@ namespace backend.Services
 
             // _schedulerService.Add(() => _mailService.SendOrderConfirmation(order,user), 7);
 
-            return order.orderPayment._links.Checkout.Href;
+            return order;
         }
 
         public async Task<Order> Payment(Order order)
