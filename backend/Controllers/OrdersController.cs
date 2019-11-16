@@ -31,20 +31,33 @@ namespace backend.Controllers
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         // GET: api/Payments
         [HttpGet]
-        public IEnumerable<Order> Get([FromQuery]int? limit)
+        public Response<Order> Get([FromQuery]int take = int.MaxValue, [FromQuery]int skip = 0)
         {
+            Response<Order> response = new Response<Order>();
+
             string currentUserId = User.Identity.Name;
 
-            User user =_userService.Get(currentUserId);
+            User user = _userService.Get(currentUserId);
 
-            IEnumerable<Order> orders;
+            List<Order> orders;
 
             if (!User.IsInRole(Role.Admin))
-                orders = _orderService.Get(user, limit);
+                orders = _orderService.List(user);
             else
-                orders = _orderService.Get(limit);
+                orders = _orderService.List();
 
-            return orders;
+            response.Data = orders.Skip(skip).Take(take).ToList();
+
+            response.Total = response.Data.Count;
+
+            response.Taken = take;
+
+            if (take > response.Total)
+                response.Taken = response.Total;
+
+            response.Skipped = skip;
+
+            return response;
         }
 
         // GET: api/Payments/5

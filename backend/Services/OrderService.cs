@@ -18,6 +18,7 @@ using iText.Kernel.Pdf;
 using iText.Kernel.Geom;
 using iText.Html2pdf;
 using iText.StyledXmlParser.Css.Media;
+using static backend.Models.Payment;
 
 namespace backend.Services
 {
@@ -42,31 +43,19 @@ namespace backend.Services
             // _schedulerService = new SchedulerService(config);
         }
 
-        public List<Order> Get(int? limit)
+        public List<Order> List()
         {
-            if(limit == null)
-                return _orders.Find<Order>(Order => true).SortByDescending(x => x.Ordernumber).ToList();
-            else
-            {
-                int limitInt = limit.Value;
-                return _orders.Find<Order>(Order => true).SortByDescending(x => x.Ordernumber).ToList().Take(limitInt).ToList();
-            } 
+            return _orders.Find<Order>(Order => true).SortByDescending(x => x.Ordernumber).ToList();
+        }
+
+        public List<Order> List(User user)
+        {
+            return _orders.Find<Order>(x => x.User.Id == user.Id).SortByDescending(x => x.Created).ToList();
         }
 
         public Order Get(string id)
         {
             return _orders.Find<Order>(x => x.Id == id).FirstOrDefault();
-        }
-
-        public List<Order> Get(User user, int? limit)
-        {
-            if (limit == null)
-                return _orders.Find<Order>(x => x.User.Id == user.Id).SortByDescending(x => x.Created).ToList();
-            else
-            {
-                int limitInt = limit.Value;
-                return _orders.Find<Order>(x => x.User.Id == user.Id).SortByDescending(x => x.Created).ToList().Take(limitInt).ToList();
-            }
         }
 
         public List<Order> GetFrom(DateTime date)
@@ -84,7 +73,7 @@ namespace backend.Services
             //_carts.DeleteOne(x => x.Id == cartId);
 
             order.Created = DateTime.Now;
-            
+
             order.Ordernumber = 1;
 
             order.Status = "Wachten op betaling";
@@ -119,20 +108,32 @@ namespace backend.Services
                 total += (product.Count * product.ProductPrice);
             }
 
-            PaymentRequest paymentRequest = new PaymentRequest()
+            if (order.Ideal)
             {
-                Amount = new Amount(Currency.EUR, total.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)),
-                Description = $"Bestelling { order.Ordernumber }",
-                RedirectUrl = $"https://www.wrautomaten.nl/orders/{ order.Id }?key={ order.Key }",
-                Metadata = "{\"order_id\":\"" + order.Id + "\",\"cart_id\":\"" + order.CartId + "\"}",
-                WebhookUrl = "https://backend.wrautomaten.nl/api/orders/webhook"
-            };
+                PaymentRequest paymentRequest = new PaymentRequest()
+                {
+                    Amount = new Amount(Currency.EUR, total.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)),
+                    Description = $"Bestelling { order.Ordernumber }",
+                    RedirectUrl = $"https://www.wrautomaten.nl/orders/{ order.Id }?key={ order.Key }",
+                    Metadata = "{\"order_id\":\"" + order.Id + "\",\"cart_id\":\"" + order.CartId + "\"}",
+                    WebhookUrl = "https://backend.wrautomaten.nl/api/orders/webhook"
+                };
 
-            PaymentResponse paymentResponse = await _paymentClient.CreatePaymentAsync(paymentRequest);
+                PaymentResponse paymentResponse = await _paymentClient.CreatePaymentAsync(paymentRequest);
 
-            Payment payment = JsonConvert.DeserializeObject<Payment>(JsonConvert.SerializeObject(paymentResponse));
+                order.orderPayment = JsonConvert.DeserializeObject<Payment>(JsonConvert.SerializeObject(paymentResponse));
 
-            order.orderPayment = payment;
+                return order;
+            }
+
+            order.orderPayment = new Payment();
+
+            AmountClass amount = new AmountClass();
+
+            amount.Currency = "EUR";
+            amount.Value = total.ToString("0.00");
+
+            order.orderPayment.Amount = amount;
 
             return order;
         }

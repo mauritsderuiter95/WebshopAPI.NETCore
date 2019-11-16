@@ -102,7 +102,9 @@ namespace backend.Services
             }
 
             confirmationMail.Params.OrderNumber = order.Ordernumber.ToString();
-            confirmationMail.Params.Payment = order.orderPayment._links.Checkout.Href.Replace("https://", "");
+
+            if (order.Ideal)
+                confirmationMail.Params.Payment = order.orderPayment._links.Checkout.Href.Replace("https://", "");
 
             confirmationMail.Params.Link = $"www.wrautomaten.nl/orders/{order.Id}?key={order.Key}";
 
