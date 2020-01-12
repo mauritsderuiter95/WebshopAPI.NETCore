@@ -69,6 +69,8 @@ namespace backend
                     builder.WithOrigins("https://www.wr-automaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
                     builder.WithOrigins("https://www.wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
                     builder.WithOrigins("https://wrautomaten.nl").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+                    builder.WithOrigins("http://wrnuxt.azurewebsites.net").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
+                    builder.WithOrigins("https://wrnuxt.azurewebsites.net").AllowAnyMethod().AllowAnyHeader().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromSeconds(3600));
                 });
             });
 
