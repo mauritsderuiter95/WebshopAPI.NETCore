@@ -50,8 +50,28 @@ namespace backend
             };
 
             var connectionKey = "MONGODB_CONNECTION";
-            var connection = ConfigurationManager.ConnectionStrings[connectionKey];
-            string connectionString = connection.ConnectionString;
+
+            ConnectionStringSettings connection;
+
+            try
+            {
+                connection = ConfigurationManager.ConnectionStrings[connectionKey];
+            } 
+            catch (Exception e)
+            {
+                throw new Exception($"Er ging iets mis met het ophalen van de connectionstring + { e.Message }");
+            }
+
+            string connectionString = string.Empty;
+            
+            try
+            {
+                connectionString = connection.ConnectionString;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"connection is empty + { e.Message }");
+            }
 
 
             services.AddHangfire(config => config.UseMongoStorage(connectionString, "Hangfire", storageOptions));
