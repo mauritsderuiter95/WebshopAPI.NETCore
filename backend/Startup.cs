@@ -74,6 +74,7 @@ namespace backend
             //}
 
 
+
             services.AddHangfire(config => config.UseMongoStorage(connection, "Hangfire", storageOptions));
 
             services.AddCors(options =>
