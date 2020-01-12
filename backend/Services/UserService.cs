@@ -34,7 +34,7 @@ namespace backend.Services
             // _passwordSalt.Salt = config.GetSection("PasswordHash")["Salt"];
             _passwordSalt.Salt = config.GetValue<string>("SALT");
 
-            string connectionString = config.GetConnectionString("MONGODB_CONNECTION");
+            string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION"); ;
 
             // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
             var client = new MongoClient(connectionString);

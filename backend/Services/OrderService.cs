@@ -34,7 +34,7 @@ namespace backend.Services
 
         public OrderService(IConfiguration config)
         {
-            string connectionString = config.GetConnectionString("MONGODB_CONNECTION");
+            string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION");
 
             // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
             var client = new MongoClient(connectionString);
