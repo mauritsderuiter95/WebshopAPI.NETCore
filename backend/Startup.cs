@@ -53,19 +53,6 @@ namespace backend
 
             string connection = Configuration.GetConnectionString(connectionKey);
 
-            //string connectionString = string.Empty;
-
-            //try
-            //{
-            //    connectionString = connection.ConnectionString;
-            //}
-            //catch (Exception e)
-            //{
-            //    throw new Exception($"connection is empty + { e.Message }");
-            //}
-
-            throw new Exception(connection);
-
             services.AddHangfire(config => config.UseMongoStorage(connection, "Hangfire", storageOptions));
 
             services.AddCors(options =>
@@ -103,7 +90,7 @@ namespace backend
             // configure jwt authentication
             // var appSettings = appSettingsSection.Get<AppSettings>();
             // var key = Encoding.ASCII.GetBytes(appSettings.Secret);
-            var key = Encoding.ASCII.GetBytes(ConfigurationManager.AppSettings["SECRET"]);
+            var key = Encoding.ASCII.GetBytes(Configuration.GetValue<string>("SECRET"));
 
             services.AddAuthentication(x =>
             {
