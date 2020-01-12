@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -28,7 +29,8 @@ namespace backend.Services
             settings.Sender = _emailAddress;
             settings.ReplyTo = _emailAddress;
 
-            string apikey = config.GetSection("Apikeys")["Sendinblue"];
+            // string apikey = config.GetSection("Apikeys")["Sendinblue"];
+            string apikey = ConfigurationManager.AppSettings["SENDINBLUE"];
 
             requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://api.sendinblue.com/v3/smtp/email");
             requestMessage.Headers.Add("api-key", apikey);

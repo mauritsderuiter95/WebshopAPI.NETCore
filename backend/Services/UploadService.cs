@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Drawing;
 using System.IO;
 using System.Linq;
@@ -20,10 +21,18 @@ namespace backend.Services
 
         public UploadService(IConfiguration config)
         {
-            var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            var connectionKey = "MONGODB_CONNECTION";
+            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+
+            // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            var client = new MongoClient(connectionString);
+
             var database = client.GetDatabase("wrautomaten");
             _photos = database.GetCollection<Photo>("Photos");
-            _baseUrl = config.GetSection("AppSettings")["BaseUrl"];
+
+
+            // _baseUrl = config.GetSection("AppSettings")["BaseUrl"];
+            _baseUrl = ConfigurationManager.AppSettings["BASE_URL"];
         }
 
         public List<Photo> Get(int? limit)

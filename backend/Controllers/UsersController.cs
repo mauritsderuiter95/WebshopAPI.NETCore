@@ -96,7 +96,7 @@ namespace backend.Controllers
             if (user == null)
                 return NotFound();
 
-            return AcceptedAtRoute("GetUser", new { id = user.Id.ToString() }, user);
+            return AcceptedAtRoute("GetUser", new { id = user.Id }, user);
         }
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]

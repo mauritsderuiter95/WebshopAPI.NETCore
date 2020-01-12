@@ -12,6 +12,7 @@ using MongoDB.Driver;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
+using System.Configuration;
 
 namespace backend.Services
 {
@@ -26,11 +27,19 @@ namespace backend.Services
         public UserService(IConfiguration config)
         {
             _appSettings = new AppSettings();
-            _appSettings.Secret = config.GetSection("AppSettings")["Secret"]; ;
-            _passwordSalt = new PasswordSalt();
-            _passwordSalt.Salt = config.GetSection("PasswordHash")["Salt"];
+            // _appSettings.Secret = config.GetSection("AppSettings")["Secret"];
+            _appSettings.Secret = ConfigurationManager.AppSettings["SECRET"];
 
-            var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            _passwordSalt = new PasswordSalt();
+            // _passwordSalt.Salt = config.GetSection("PasswordHash")["Salt"];
+            _passwordSalt.Salt = ConfigurationManager.AppSettings["SALT"];
+
+            var connectionKey = "MONGODB_CONNECTION";
+            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+
+            // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            var client = new MongoClient(connectionString);
+
             var database = client.GetDatabase("wrautomaten");
             _users = database.GetCollection<User>("Users");
             _verificationService = new VerificationService(config);
@@ -158,7 +167,8 @@ namespace backend.Services
             {
                 // authentication successful so generate jwt token
                 var tokenHandler = new JwtSecurityTokenHandler();
-                var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+                // var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
+                var key = Encoding.ASCII.GetBytes(ConfigurationManager.AppSettings["SECRET"]);
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.Id),

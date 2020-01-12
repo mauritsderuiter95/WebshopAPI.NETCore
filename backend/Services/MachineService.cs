@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,7 +15,12 @@ namespace backend.Services
 
         public MachineService(IConfiguration config)
         {
-            var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            var connectionKey = "MONGODB_CONNECTION";
+            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+
+            // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            var client = new MongoClient(connectionString);
+
             var database = client.GetDatabase("wrautomaten");
             _machines = database.GetCollection<Machine>("Machines");
         }

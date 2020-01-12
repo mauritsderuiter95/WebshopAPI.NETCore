@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Linq;
 using System.Threading.Tasks;
 using backend.Models;
@@ -14,7 +15,12 @@ namespace backend.Services
 
         public ProductService(IConfiguration config)
         {
-            var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            var connectionKey = "MONGODB_CONNECTION";
+            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+
+            // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            var client = new MongoClient(connectionString);
+
             var database = client.GetDatabase("wrautomaten");
             _products = database.GetCollection<Product>("Products");
         }

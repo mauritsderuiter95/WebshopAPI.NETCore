@@ -19,6 +19,7 @@ using iText.Kernel.Geom;
 using iText.Html2pdf;
 using iText.StyledXmlParser.Css.Media;
 using static backend.Models.Payment;
+using System.Configuration;
 
 namespace backend.Services
 {
@@ -33,11 +34,19 @@ namespace backend.Services
 
         public OrderService(IConfiguration config)
         {
-            var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            var connectionKey = "MONGODB_CONNECTION";
+            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+
+            // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            var client = new MongoClient(connectionString);
+
             var database = client.GetDatabase("wrautomaten");
             _orders = database.GetCollection<Order>("Orders");
             _carts = database.GetCollection<Cart>("Carts");
-            var apikey = config.GetSection("Apikeys")["Mollie"];
+
+            // var apikey = config.GetSection("Apikeys")["Mollie"];
+            var apikey = ConfigurationManager.AppSettings["MOLLIE"];
+
             _paymentClient = new PaymentClient(apikey);
             _mailService = new MailService(config);
             // _schedulerService = new SchedulerService(config);

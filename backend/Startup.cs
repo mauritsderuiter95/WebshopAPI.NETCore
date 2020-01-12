@@ -19,6 +19,7 @@ using backend.Models;
 using Hangfire;
 using Hangfire.Mongo;
 using Microsoft.AspNetCore.Http;
+using System.Configuration;
 
 namespace backend
 {
@@ -47,7 +48,11 @@ namespace backend
                 // ...
                 MigrationOptions = migrationOptions
             };
-            services.AddHangfire(config => config.UseMongoStorage(Configuration.GetConnectionString("WrautomatenDb"), "Hangfire", storageOptions));
+
+            var connectionKey = "MONGODB_CONNECTION";
+            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+
+            services.AddHangfire(config => config.UseMongoStorage(connectionString, "Hangfire", storageOptions));
 
             services.AddCors(options =>
             {
@@ -78,12 +83,13 @@ namespace backend
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             // configure strongly typed settings objects
-            var appSettingsSection = Configuration.GetSection("AppSettings");
-            services.Configure<AppSettings>(appSettingsSection);
+            // var appSettingsSection = Configuration.GetSection("AppSettings");
+            // services.Configure<AppSettings>(appSettingsSection);
 
             // configure jwt authentication
-            var appSettings = appSettingsSection.Get<AppSettings>();
-            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            // var appSettings = appSettingsSection.Get<AppSettings>();
+            // var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            var key = Encoding.ASCII.GetBytes(ConfigurationManager.AppSettings["SECRET"]);
             services.AddAuthentication(x =>
             {
                 x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
