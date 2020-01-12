@@ -46,7 +46,8 @@ namespace backend
             var storageOptions = new MongoStorageOptions
             {
                 // ...
-                MigrationOptions = migrationOptions
+                MigrationOptions = migrationOptions,
+                CheckConnection = false
             };
 
             var connectionKey = "MONGODB_CONNECTION";
