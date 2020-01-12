@@ -24,8 +24,7 @@ namespace backend.Services
             RecurringJob.AddOrUpdate(
                 "SendDailyUpdate", 
                 () => _mailService.SendDailyUpdate(_orderService.GetFrom(DateTime.Now.AddDays(-1))), 
-                "0 16 * * *", 
-                TimeZoneInfo.Local);
+                "0 16 * * *");
         }
 
         public void List()
