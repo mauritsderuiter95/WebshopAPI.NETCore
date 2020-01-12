@@ -64,8 +64,7 @@ namespace backend
             //    throw new Exception($"connection is empty + { e.Message }");
             //}
 
-            if (string.IsNullOrEmpty(connection))
-                throw new Exception("connectionstring is empty");
+            throw new Exception(connection);
 
             services.AddHangfire(config => config.UseMongoStorage(connection, "Hangfire", storageOptions));
 
