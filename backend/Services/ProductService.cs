@@ -15,8 +15,7 @@ namespace backend.Services
 
         public ProductService(IConfiguration config)
         {
-            var connectionKey = "MONGODB_CONNECTION";
-            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+            string connectionString = config.GetConnectionString("MONGODB_CONNECTION");
 
             // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
             var client = new MongoClient(connectionString);

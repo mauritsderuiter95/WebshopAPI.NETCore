@@ -34,8 +34,7 @@ namespace backend.Services
 
         public OrderService(IConfiguration config)
         {
-            var connectionKey = "MONGODB_CONNECTION";
-            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+            string connectionString = config.GetConnectionString("MONGODB_CONNECTION");
 
             // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
             var client = new MongoClient(connectionString);
@@ -45,7 +44,7 @@ namespace backend.Services
             _carts = database.GetCollection<Cart>("Carts");
 
             // var apikey = config.GetSection("Apikeys")["Mollie"];
-            var apikey = ConfigurationManager.AppSettings["MOLLIE"];
+            var apikey = config.GetValue<string>("MOLLIE");
 
             _paymentClient = new PaymentClient(apikey);
             _mailService = new MailService(config);

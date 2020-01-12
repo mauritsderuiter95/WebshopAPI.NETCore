@@ -30,7 +30,7 @@ namespace backend.Services
             settings.ReplyTo = _emailAddress;
 
             // string apikey = config.GetSection("Apikeys")["Sendinblue"];
-            string apikey = ConfigurationManager.AppSettings["SENDINBLUE"];
+            string apikey = config.GetValue<string>("SENDINBLUE");
 
             requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://api.sendinblue.com/v3/smtp/email");
             requestMessage.Headers.Add("api-key", apikey);

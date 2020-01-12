@@ -28,14 +28,13 @@ namespace backend.Services
         {
             _appSettings = new AppSettings();
             // _appSettings.Secret = config.GetSection("AppSettings")["Secret"];
-            _appSettings.Secret = ConfigurationManager.AppSettings["SECRET"];
+            _appSettings.Secret = config.GetValue<string>("SECRET");
 
             _passwordSalt = new PasswordSalt();
             // _passwordSalt.Salt = config.GetSection("PasswordHash")["Salt"];
-            _passwordSalt.Salt = ConfigurationManager.AppSettings["SALT"];
+            _passwordSalt.Salt = config.GetValue<string>("SALT");
 
-            var connectionKey = "MONGODB_CONNECTION";
-            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+            string connectionString = config.GetConnectionString("MONGODB_CONNECTION");
 
             // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
             var client = new MongoClient(connectionString);
@@ -168,7 +167,7 @@ namespace backend.Services
                 // authentication successful so generate jwt token
                 var tokenHandler = new JwtSecurityTokenHandler();
                 // var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
-                var key = Encoding.ASCII.GetBytes(ConfigurationManager.AppSettings["SECRET"]);
+                var key = Encoding.ASCII.GetBytes(_appSettings.Secret);
                 var claims = new List<Claim>
                 {
                     new Claim(ClaimTypes.Name, user.Id),

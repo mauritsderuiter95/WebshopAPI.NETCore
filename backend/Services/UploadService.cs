@@ -21,8 +21,7 @@ namespace backend.Services
 
         public UploadService(IConfiguration config)
         {
-            var connectionKey = "MONGODB_CONNECTION";
-            string connectionString = ConfigurationManager.ConnectionStrings[connectionKey].ConnectionString;
+            string connectionString = config.GetConnectionString("MONGODB_CONNECTION");
 
             // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
             var client = new MongoClient(connectionString);
@@ -32,7 +31,7 @@ namespace backend.Services
 
 
             // _baseUrl = config.GetSection("AppSettings")["BaseUrl"];
-            _baseUrl = ConfigurationManager.AppSettings["BASE_URL"];
+            _baseUrl = config.GetValue<string>("BASE_URL");
         }
 
         public List<Photo> Get(int? limit)
