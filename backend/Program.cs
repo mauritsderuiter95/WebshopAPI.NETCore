@@ -22,6 +22,6 @@ namespace backend
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
                 .UseWebRoot(Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"))
-                .UseUrls("http://*:5001");
+                .UseUrls("http://*:80");
     }
 }
