@@ -144,6 +144,7 @@ namespace backend
 
             SchedulerService schedulerService = new SchedulerService(_configuration);
             schedulerService.Startup();
+
         }
     }
 }
