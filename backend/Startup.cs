@@ -5,8 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -50,9 +49,9 @@ namespace backend
                 CheckConnection = false
             };
 
-            var connectionKey = "MONGODB_CONNECTION";
+            //var connectionKey = "MONGODB_CONNECTION";
 
-            string connection = Configuration.GetConnectionString(connectionKey);
+            string connection = Configuration.GetConnectionString("WrautomatenDb");
 
             services.AddHangfire(config => config.UseMongoStorage(connection, "Hangfire", storageOptions));
 
@@ -84,16 +83,18 @@ namespace backend
             services.AddScoped<SchedulerService>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            //services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+
+            services.AddControllers();
 
             // configure strongly typed settings objects
-            // var appSettingsSection = Configuration.GetSection("AppSettings");
-            // services.Configure<AppSettings>(appSettingsSection);
+            var appSettingsSection = Configuration.GetSection("AppSettings");
+            services.Configure<AppSettings>(appSettingsSection);
 
             // configure jwt authentication
-            // var appSettings = appSettingsSection.Get<AppSettings>();
-            // var key = Encoding.ASCII.GetBytes(appSettings.Secret);
-            var key = Encoding.ASCII.GetBytes(Configuration.GetValue<string>("SECRET"));
+            var appSettings = appSettingsSection.Get<AppSettings>();
+            var key = Encoding.ASCII.GetBytes(appSettings.Secret);
+            // var key = Encoding.ASCII.GetBytes(Configuration.GetValue<string>("SECRET"));
 
             services.AddAuthentication(x =>
             {
@@ -118,7 +119,7 @@ namespace backend
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseCors("AllowSome");
 
@@ -129,11 +130,17 @@ namespace backend
 
             app.UseStaticFiles();
 
+            app.UseRouting();
+
             app.UseDeveloperExceptionPage();
-            app.UseDatabaseErrorPage();
+            //app.UseDatabaseErrorPage();
+
+            //app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseHttpsRedirection();
-            app.UseMvc();
+            // app.UseMvc();
+            app.UseEndpoints(endpoints => endpoints.MapControllers());
 
             app.UseHangfireServer();
             app.UseHangfireDashboard("/hangfire", new DashboardOptions()

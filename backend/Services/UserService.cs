@@ -27,17 +27,17 @@ namespace backend.Services
         public UserService(IConfiguration config)
         {
             _appSettings = new AppSettings();
-            // _appSettings.Secret = config.GetSection("AppSettings")["Secret"];
-            _appSettings.Secret = config.GetValue<string>("SECRET");
+            _appSettings.Secret = config.GetSection("AppSettings")["Secret"];
+            //_appSettings.Secret = config.GetValue<string>("SECRET");
 
             _passwordSalt = new PasswordSalt();
-            // _passwordSalt.Salt = config.GetSection("PasswordHash")["Salt"];
-            _passwordSalt.Salt = config.GetValue<string>("SALT");
+            _passwordSalt.Salt = config.GetSection("PasswordHash")["Salt"];
+            //_passwordSalt.Salt = config.GetValue<string>("SALT");
 
-            string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION"); ;
+            //string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION");
 
-            // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
-            var client = new MongoClient(connectionString);
+            var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            //var client = new MongoClient(connectionString);
 
             var database = client.GetDatabase("wrautomaten");
             _users = database.GetCollection<User>("Users");

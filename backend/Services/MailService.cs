@@ -21,6 +21,7 @@ namespace backend.Services
         private readonly Mail settings = new Mail();
         private readonly HttpRequestMessage requestMessage;
         private readonly EmailAddress _emailAddress = new EmailAddress();
+        private readonly string _apikey = string.Empty;
 
         public MailService(IConfiguration config)
         {
@@ -29,11 +30,11 @@ namespace backend.Services
             settings.Sender = _emailAddress;
             settings.ReplyTo = _emailAddress;
 
-            // string apikey = config.GetSection("Apikeys")["Sendinblue"];
-            string apikey = config.GetValue<string>("SENDINBLUE");
+            _apikey = config.GetSection("Apikeys")["Sendinblue"];
+            //string apikey = config.GetValue<string>("SENDINBLUE");
 
             requestMessage = new HttpRequestMessage(HttpMethod.Post, "https://api.sendinblue.com/v3/smtp/email");
-            requestMessage.Headers.Add("api-key", apikey);
+            requestMessage.Headers.Add("api-key", _apikey);
         }
 
         public async Task<bool> SendConfirmation(Verification verification, User user)
@@ -67,10 +68,55 @@ namespace backend.Services
 
         public void SendOrderConfirmation(Order order, User user)
         {
-            var serialized = JsonConvert.SerializeObject(settings);
-            var confirmationMail = JsonConvert.DeserializeObject<OrderConfirmationMail>(serialized);
+            var confirmationMail = ConfirmationMail(order, user);
 
             confirmationMail.TemplateId = 2;
+
+            EmailAddress toEmail = new EmailAddress();
+            toEmail.Email = user.Username;
+            List<EmailAddress> emailAddresses = new List<EmailAddress> { toEmail };
+
+            if (order.Ideal)
+                confirmationMail.Params.Payment = order.orderPayment._links.Checkout.Href.Replace("https://", "");
+
+            confirmationMail.Params.Link = $"www.wrautomaten.nl/orders/{order.Id}?key={order.Key}";
+
+            confirmationMail.To = emailAddresses;
+
+            var jsonContent = JsonConvert.SerializeObject(confirmationMail);
+
+            requestMessage.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            client.SendAsync(requestMessage);
+        }
+
+        public void SendOrderToWim(Order order, User user)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, "https://api.sendinblue.com/v3/smtp/email");
+
+            request.Headers.Add("api-key", _apikey);
+
+            var confirmationMail = ConfirmationMail(order, user);
+
+            confirmationMail.TemplateId = 5;
+
+            EmailAddress toEmail = new EmailAddress();
+            toEmail.Email = "wim@wr-automaten.nl";
+            List<EmailAddress> emailAddresses = new List<EmailAddress> { toEmail };
+
+            confirmationMail.To = emailAddresses;
+
+            var jsonContent = JsonConvert.SerializeObject(confirmationMail);
+
+            request.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            client.SendAsync(request);
+        }
+
+        private OrderConfirmationMail ConfirmationMail(Order order, User user)
+        {
+            var serialized = JsonConvert.SerializeObject(settings);
+            var confirmationMail = JsonConvert.DeserializeObject<OrderConfirmationMail>(serialized);
 
             confirmationMail.Params = new OrderConfirmationParams();
 
@@ -83,12 +129,6 @@ namespace backend.Services
             confirmationMail.Params.DeliveryAddress.Street2 = user.Street2;
             confirmationMail.Params.DeliveryAddress.Zipcode = user.Zipcode;
             confirmationMail.Params.DeliveryAddress.City = user.City;
-
-
-            EmailAddress toEmail = new EmailAddress();
-            toEmail.Email = user.Username;
-            List<EmailAddress> emailAddresses = new List<EmailAddress>();
-            emailAddresses.Add(toEmail);
 
             confirmationMail.Params.Products = new List<ProductsProduct>();
 
@@ -105,18 +145,7 @@ namespace backend.Services
 
             confirmationMail.Params.OrderNumber = order.Ordernumber.ToString();
 
-            if (order.Ideal)
-                confirmationMail.Params.Payment = order.orderPayment._links.Checkout.Href.Replace("https://", "");
-
-            confirmationMail.Params.Link = $"www.wrautomaten.nl/orders/{order.Id}?key={order.Key}";
-
-            confirmationMail.To = emailAddresses;
-
-            var jsonContent = JsonConvert.SerializeObject(confirmationMail);
-
-            requestMessage.Content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            client.SendAsync(requestMessage);
+            return confirmationMail;
         }
 
         public async Task<bool> SendPasswordReset(User user)

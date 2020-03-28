@@ -15,10 +15,10 @@ namespace backend.Services
 
         public MachineService(IConfiguration config)
         {
-            string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION");
+            //string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION");
 
-            // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
-            var client = new MongoClient(connectionString);
+            var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            //var client = new MongoClient(connectionString);
 
             var database = client.GetDatabase("wrautomaten");
             _machines = database.GetCollection<Machine>("Machines");

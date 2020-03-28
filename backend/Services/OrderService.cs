@@ -34,17 +34,17 @@ namespace backend.Services
 
         public OrderService(IConfiguration config)
         {
-            string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION");
+            //string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION");
 
-            // var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
-            var client = new MongoClient(connectionString);
+            var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            //var client = new MongoClient(connectionString);
 
             var database = client.GetDatabase("wrautomaten");
             _orders = database.GetCollection<Order>("Orders");
             _carts = database.GetCollection<Cart>("Carts");
 
-            // var apikey = config.GetSection("Apikeys")["Mollie"];
-            var apikey = config.GetValue<string>("MOLLIE");
+            var apikey = config.GetSection("Apikeys")["Mollie"];
+            //var apikey = config.GetValue<string>("MOLLIE");
 
             _paymentClient = new PaymentClient(apikey);
             _mailService = new MailService(config);
@@ -101,8 +101,11 @@ namespace backend.Services
             _orders.ReplaceOne(x => x.Id == order.Id, order);
 
             _mailService.SendOrderConfirmation(order, order.User);
+            _mailService.SendOrderToWim(order, order.User);
 
             // _schedulerService.Add(() => _mailService.SendOrderConfirmation(order,user), 7);
+
+            _carts.DeleteOne<Cart>(x => x.Id == order.CartId);
 
             return order;
         }
