@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace backend.Models.Mails
 {
-    public class OrderConfirmationMail : Mail
-    {
-        [JsonProperty("params")]
-        public OrderConfirmationParams Params { get; set; }
-    }
+  public class OrderConfirmationMail : Mail
+  {
+    [JsonProperty("params")]
+    public OrderConfirmationParams Params { get; set; }
+  }
 }
