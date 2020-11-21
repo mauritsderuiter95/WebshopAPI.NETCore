@@ -27,5 +27,13 @@ namespace backend.Models
 
         [BsonElement("Price")]
         public decimal Price { get; set; }
+
+        public List<KeyValuePair<string, string>> Attributes { get; set; }
+
+        public string Content { get; set; }
+
+        public int productCount { get; set; }
+
+        public int userCount { get; set; }
     }
 }

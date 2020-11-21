@@ -9,75 +9,80 @@ using MongoDB.Driver;
 
 namespace backend.Services
 {
-  public class ProductService
-  {
-    private readonly IMongoCollection<Product> _products;
-
-    public ProductService(IConfiguration config)
+    public class ProductService
     {
-      //string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION");
+        private readonly IMongoCollection<Product> _products;
 
-      var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
-      //var client = new MongoClient(connectionString);
-
-      var database = client.GetDatabase("wrautomaten");
-      _products = database.GetCollection<Product>("Products");
-    }
-
-    public List<Product> GetList(string category)
-    {
-      if (string.IsNullOrEmpty(category))
-        return _products.Find(product => true).ToList();
-      else
-      {
-        try
+        public ProductService(IConfiguration config)
         {
-          List<Product> products = _products.Find(product => true).ToList();
-          //.Where(x => x.Category.Contains(category)).ToList();
+            //string connectionString = ConfigurationExtensions.GetConnectionString(config, "MONGODB_CONNECTION");
 
-          products = products.Where(x => x.Category != null && x.Category.Any(i => i.ToLower() == category.ToLower())).ToList();
-          return products;
+            var client = new MongoClient(config.GetConnectionString("WrautomatenDb"));
+            //var client = new MongoClient(connectionString);
+
+            var database = client.GetDatabase("wrautomaten");
+            _products = database.GetCollection<Product>("Products");
         }
-        catch
+
+        public List<Product> GetList(string category)
         {
-          return null;
+            if (string.IsNullOrEmpty(category))
+                return _products.Find(product => true).ToList();
+            else
+            {
+                try
+                {
+                    List<Product> products = _products.Find(product => true).ToList();
+                    //.Where(x => x.Category.Contains(category)).ToList();
+
+                    products = products.Where(x => x.Category != null && x.Category.Any(i => i.ToLower() == category.ToLower())).ToList();
+                    return products;
+                }
+                catch
+                {
+                    return null;
+                }
+            }
         }
-      }
-    }
 
-    public Product Get(string id)
-    {
-      return _products.Find<Product>(product => product.Id == id).FirstOrDefault();
-    }
+        public Product Get(string id)
+        {
+            return _products.Find<Product>(product => product.Id == id).FirstOrDefault();
+        }
 
-    public List<string> GetCat()
-    {
-      List<Product> products = GetList(null);
+        public Product GetByName(string productName)
+        {
+            return _products.Find<Product>(product => product.ProductName.ToLower() == productName.ToLower()).FirstOrDefault();
+        }
 
-      return products.Where(x => x.Category != null).SelectMany(x => x.Category).Distinct().ToList();
-    }
+        public List<string> GetCat()
+        {
+            List<Product> products = GetList(null);
 
-    public Product Create(Product product)
-    {
-      _products.InsertOne(product);
-      return product;
-    }
+            return products.Where(x => x.Category != null).SelectMany(x => x.Category).Distinct().ToList();
+        }
 
-    public Product Update(string id, Product productIn)
-    {
-      productIn.Id = id;
-      _products.ReplaceOne(product => product.Id == id, productIn);
-      return productIn;
-    }
+        public Product Create(Product product)
+        {
+            _products.InsertOne(product);
+            return product;
+        }
 
-    public void Remove(Product productIn)
-    {
-      _products.DeleteOne(product => product.Id == productIn.Id);
-    }
+        public Product Update(string id, Product productIn)
+        {
+            productIn.Id = id;
+            _products.ReplaceOne(product => product.Id == id, productIn);
+            return productIn;
+        }
 
-    public void Remove(string id)
-    {
-      _products.DeleteOne(product => product.Id == id);
+        public void Remove(Product productIn)
+        {
+            _products.DeleteOne(product => product.Id == productIn.Id);
+        }
+
+        public void Remove(string id)
+        {
+            _products.DeleteOne(product => product.Id == id);
+        }
     }
-  }
 }

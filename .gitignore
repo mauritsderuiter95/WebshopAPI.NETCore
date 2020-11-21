@@ -263,3 +263,6 @@ __pycache__/
 # Secrets
 appsettings.json
 appsettings.Development.json
+
+# Publish folder
+./publish

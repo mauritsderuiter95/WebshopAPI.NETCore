@@ -34,15 +34,18 @@ namespace backend.Controllers
             return _productService.GetCat();
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetProduct")]
+        [HttpGet("{id}", Name = "GetProduct")]
         public ActionResult<Product> Get(string id)
         {
-            var product = _productService.Get(id);
+            id = id.Replace('-', ' ');
+
+            var product = _productService.GetByName(id);
 
             if (product == null)
-            {
+                product = _productService.Get(id);
+
+            if (product == null)
                 return NotFound();
-            }
 
             return product;
         }

@@ -28,15 +28,17 @@ namespace backend.Controllers
             return _machineService.GetList(type);
         }
 
-        [HttpGet("{id:length(24)}", Name = "GetMachine")]
+        [HttpGet("{id}", Name = "GetMachine")]
         public ActionResult<Machine> Get(string id)
         {
-            var machine = _machineService.Get(id);
+            id = id.Replace('-', ' ');
+            var machine = _machineService.GetByName(id);
 
             if (machine == null)
-            {
+                machine = _machineService.Get(id);
+
+            if (machine == null)
                 return NotFound();
-            }
 
             return machine;
         }
